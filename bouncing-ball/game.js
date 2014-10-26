@@ -22,50 +22,50 @@ function Man(x,y, diameter, direction, speed, colour) {
       this.x += this.speed * Math.sin(radians);
       this.y += this.speed * Math.cos(radians);
 
-      if (this.x < 10) {
+      if (this.x < 8) {
         if (this.direction < 270) {
           this.direction = 90 + (270 - this.direction);
         } else {
           this.direction = (90 - (this.direction - 270) ) % 360;
-        this.x = 10;
+        this.x = 8;
         }
       }
 
 
-      if (this.x > 270) {
+      if (this.x > 290) {
           if (this.direction < 90) {
               this.direction = 270 + (90 - this.direction)
           } else {
               this.direction = 270 + (90 - this.direction)
           }
-        this.x = 270;
+        this.x = 290;
       }
 
-      if (this.y < 10) {
+      if (this.y < 7) {
         if (this.direction < 180) {
           this.direction = (180 - this.direction ) % 360;
         } else {
           this.direction = 360 - (this.direction - 180);
         }
-        this.y = 10
+        this.y = 7
       }
 
-      if (this.y > 135) {
+      if (this.y > 145) {
         if (this.direction < 90) {
           this.direction = 90 + (90 - this.direction);
         } else {
             this.direction = 180 + (360 - this.direction)
         }
-        this.y = 135
+        this.y = 145
       }
     }
 }
 
 
 var people = [
-  new Man(100,100,5, 25,  2, "red"),
-  new Man(200,50, 6, 225, 4, "yellow"),
-  new Man(80 ,50, 5, 125, 2, "green")
+  new Man(100,100,6, 25,  3, "red"),
+  new Man(200,50, 7, 225, 4, "yellow"),
+  new Man(80 ,50, 8, 125, 2, "green")
   ]
 
 var ctx;
@@ -97,5 +97,5 @@ function tick() {
 
 function begin() {
   setup();
-  setInterval(tick, 1000 / 50);
+  setInterval(tick, 15);
 }

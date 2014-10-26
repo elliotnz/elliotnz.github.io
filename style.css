@@ -7,6 +7,15 @@ ul {
 		list-style-type: square;
 }
 
+#myCanvas {
+	margin-top: 200px;
+	margin-left: 500px;
+	position: absolute;
+	border-width: 5px;
+	border-style: solid;
+	border-color: black;
+}
+
 #headerFont {
 		margin-top: 0px;
 		margin-left: 10px;
