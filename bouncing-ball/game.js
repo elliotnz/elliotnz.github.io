@@ -1,10 +1,13 @@
-function Man(x,y, diameter, direction, speed, colour) {
+
+function Ball(board, x,y, diameter, direction, speed, colour) {
+    this.board = board;
     this.x = x;
     this.y = y;
     this.diameter = diameter
     this.direction = direction;
     this.speed = speed; // how far to go in each tick
-    this.colour = colour
+    this.colour = colour;
+    var BORDER = 10;
 
     this.draw = function(ctx, fill) {
       ctx.beginPath();
@@ -22,80 +25,79 @@ function Man(x,y, diameter, direction, speed, colour) {
       this.x += this.speed * Math.sin(radians);
       this.y += this.speed * Math.cos(radians);
 
-      if (this.x < 8) {
+      if (this.x < BORDER) {
         if (this.direction < 270) {
           this.direction = 90 + (270 - this.direction);
         } else {
           this.direction = (90 - (this.direction - 270) ) % 360;
-        this.x = 8;
+        this.x = BORDER;
         }
       }
 
-
-      if (this.x > 290) {
+      if (this.x > (this.board.width - BORDER)) {
           if (this.direction < 90) {
               this.direction = 270 + (90 - this.direction)
           } else {
               this.direction = 270 + (90 - this.direction)
           }
-        this.x = 290;
+        this.x = this.board.width - BORDER;
       }
 
-      if (this.y < 7) {
+      if (this.y < BORDER) {
         if (this.direction < 180) {
           this.direction = (180 - this.direction ) % 360;
         } else {
           this.direction = 360 - (this.direction - 180);
         }
-        this.y = 7
+        this.y = BORDER;
       }
 
-      if (this.y > 145) {
+      if (this.y > (this.board.height - BORDER)) {
         if (this.direction < 90) {
           this.direction = 90 + (90 - this.direction);
         } else {
             this.direction = 180 + (360 - this.direction)
         }
-        this.y = 145
+        this.y = this.board.height - BORDER;
       }
     }
 }
 
-
-var people = [
-  new Man(100,100,6, 25,  3, "red"),
-  new Man(200,50, 7, 225, 4, "yellow"),
-  new Man(80 ,50, 8, 125, 2, "green")
+function Board(canvas, width, height) {
+  this.width = width;
+  this.height = height;
+  this.ctx = document.getElementById(canvas).getContext("2d");
+  this.info = document.getElementById("info");
+  this.balls = [
+    new Ball(this, 100,100,6, 25,  3, "red"),
+    new Ball(this, 200,50, 7, 225, 4, "yellow"),
+    new Ball(this, 80 ,50, 8, 125, 2, "green")
   ]
+  this.ctx.canvas.width = width;
+  this.ctx.canvas.height = height;
+  document.getElementById(canvas).style.width = '' + (width  + 50)  + 'px';
+  document.getElementById(canvas).style.height = '' + (height + 50) + 'px' ;
 
-var ctx;
-var info;
-function setup() {
-  var c = document.getElementById("canvas");
-  ctx = c.getContext("2d");
-  info = document.getElementById("info");
-}
-
-log = function(message) {
-  info.innerHTML = message;
-}
-
-clear = function(ctx) {
-  ctx.fillStyle = "grey";
-  ctx.fillRect(0,0,400,400)
-}
-
-
-function tick() {
-  clear(ctx)
-  for (i = 0; i < people.length; i++) {
-    people[i].move(ctx)
-    people[i].draw(ctx, true)
-
+  this.log = function(message) {
+    info.innerHTML = message;
   }
+
+  this.clear = function() {
+    this.ctx.fillStyle = "grey";
+    this.ctx.fillRect(0,0,width,height)
+  }
+
+  this.tick = function() {
+    this.clear()
+    for (i = 0; i < this.balls.length; i++) {
+      this.balls[i].move(this.ctx)
+      this.balls[i].draw(this.ctx, true)
+    }
+  }
+
 }
 
 function begin() {
-  setup();
-  setInterval(tick, 15);
+  var board = new Board("canvas", 600, 400)
+  setInterval(function() {board.tick()}, 1000/60.0);
 }

@@ -2,9 +2,7 @@
   font-family: Verdana;
 }
 #canvas {
-    width: 600px;
-    height: 400px;
-    background-color: grey;
+  background-color: grey;
 }
 a:hover {
   font-weight: bold
