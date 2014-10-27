@@ -19,18 +19,20 @@ div.bar {
 
 .turn {
   float: top;
+  border-radius: 0%;
   margin-top: -200px;
   margin-left: 600px;
   width: 200px;
   height: 200px;
   background: lime;
-  transition: width 1s, height 2s, background 2s, transform 1.5s;
+  transition: width 1s, height 2s, background 2s, transform 1.5s, border-radius 1.5s;
 }
 
 .turn:hover {
   width: 250px;
   height: 300px;
   background: yellow;
+  border-radius: 50%;
   -webkit-transform: rotate(180deg); /* Chrome, Safari, Opera */
 }
 

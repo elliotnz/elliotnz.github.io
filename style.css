@@ -185,7 +185,7 @@ border-left: 30px solid #e8cc17;
 }
 #footer {
 	font-family: Verdana, sans-serif;
-	position: fixed;
+	position: absolute;
   bottom: 186;
   right: 31;
 	height: 75px;
