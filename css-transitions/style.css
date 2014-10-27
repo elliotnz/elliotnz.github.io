@@ -1,15 +1,68 @@
-div {
+div.bar {
     width: 100px;
     height: 25px;
+    float: left;
+    margin-left: 0px;
+    position: static;
     background: white;
     transition-property: width, background;
     transition-duration: .3s;
     transition-timing-function: linear;
     transition-delay: 0s;
     transition: width 3s, background 2s;
+    z-index: 100;
 }
 
-div:hover {
+.clear {
+  clear: both;
+}
+
+.turn {
+  float: top;
+  margin-top: -200px;
+  margin-left: 600px;
+  width: 200px;
+  height: 200px;
+  background: lime;
+  transition: width 1s, height 2s, background 2s, transform 1.5s;
+}
+
+.turn:hover {
+  width: 250px;
+  height: 300px;
+  background: yellow;
+  -webkit-transform: rotate(180deg); /* Chrome, Safari, Opera */
+}
+
+.continuous {
+    margin-top: -200px;
+    margin-left: 0px;
+    float: right;
+    height: 200px;
+    width: 400px;
+    border: 1px solid #000;
+    -webkit-animation: animate 3s;
+    -webkit-animation-iteration-count: infinite;
+}
+
+@-webkit-keyframes animate {
+    0%   {background:yellow;}
+    33%  {background:green;}
+    66% {background:blue;}
+    100% {background:yellow;}
+}
+
+#border {
+    margin-top: 0px;
+    margin-left: 0px;
+    position: absolute;
+    background-color: black;
+    height: 225px;
+    width: 400px;
+    z-index: -1;
+}
+
+div.bar:hover {
     width: 300px;
     background: grey;
     transition-duration: .3s;
@@ -28,8 +81,4 @@ a:visited {
 
 * {
   font-family: Verdana;
-}
-
-body {
-  background: black;
 }
