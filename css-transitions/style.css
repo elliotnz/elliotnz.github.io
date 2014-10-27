@@ -68,15 +68,19 @@ div.bar:hover {
     transition-duration: .3s;
 }
 
-a:hover {
-  font-weight: bold
-}
 a {
   text-decoration: none;
   color: #23EADB;
+  transition: font-size 1s, text-shadow 1s;
 }
 a:visited {
 
+}
+
+a:hover {
+  font-weight: bold;
+  font-size: 20px;
+  text-shadow: 2px 2px 18px grey;
 }
 
 * {

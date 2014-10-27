@@ -223,9 +223,13 @@ input[type = "submit"] {
     color: black;
 }
 a:hover {
-	font-weight: bold
+	font-weight: bold;
+	font-size: 17px;
+	text-shadow: 2px 2px 18px grey;
 }
 a {
+	width: 40px;
+	transition: font-size .5s, text-shadow 1s;
 	text-decoration: none;
 	color: #FC921A;
 }
