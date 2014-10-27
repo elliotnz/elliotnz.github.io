@@ -1,0 +1,35 @@
+div {
+    width: 100px;
+    height: 25px;
+    background: white;
+    transition-property: width, background;
+    transition-duration: .3s;
+    transition-timing-function: linear;
+    transition-delay: 0s;
+    transition: width 3s, background 2s;
+}
+
+div:hover {
+    width: 300px;
+    background: grey;
+    transition-duration: .3s;
+}
+
+a:hover {
+  font-weight: bold
+}
+a {
+  text-decoration: none;
+  color: #23EADB;
+}
+a:visited {
+
+}
+
+* {
+  font-family: Verdana;
+}
+
+body {
+  background: black;
+}
