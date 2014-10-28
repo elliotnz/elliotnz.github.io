@@ -2,12 +2,8 @@ var c = document.getElementById("myCanvas");
 var ctx = c.getContext("2d")
 
 var grd = ctx.createLinearGradient(0,0,145,0);
-grd.addColorStop(0,"red");
-grd.addColorStop(0.2,"orange");
-grd.addColorStop(0.4,"yellow");
-grd.addColorStop(0.6,"green");
-grd.addColorStop(0.8,"blue");
-grd.addColorStop(1,"purple");
+grd.addColorStop(0,"goldenrod");
+grd.addColorStop(1,"rgb(210, 118, 14)");
 
 ctx.save();
 ctx.fillStyle = grd;
