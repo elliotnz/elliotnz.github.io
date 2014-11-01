@@ -86,3 +86,20 @@ p {
    text-align: center;
    vertical-align: middle;
 }
+
+a:hover {
+  font-weight: bold;
+  font-size: 17px;
+  text-shadow: 2px 2px 18px grey;
+}
+a {
+  position: absolute;
+  width: 40px;
+  transition: font-size .5s, text-shadow 1s;
+  text-decoration: none;
+  color: #FC921A;
+  bottom: 250px;
+}
+a:visited {
+  text-decoration: none;
+}
