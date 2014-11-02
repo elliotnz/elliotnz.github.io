@@ -39,85 +39,46 @@ function Monster(board, man, x, y, pixelWidth, context, colour)  {
   this.colour = colour;
   this.board = board;
   this.man = man;
+  this.counter = 0;
+  this.direction = 180;
+  this.change_x = 0;
+  this.change_y = 0;
 
   this.turn = function() {
-    var direction = 180;
-    counter = 0;
     var moved = false;
-    if ((this.x > this.man.x)) {
-      if (this.board.canMoveTo(this.x - 1, this.y)) {
-        direction = 270;
-        counter += 1;
-        moved = true;
-        this.x -= 1;
+    if (this.counter % 4 == 0) {
+      this.change_x = 0; this.change_y = 0;
+      if ((this.x > this.man.x)) {
+          this.change_x = -1;
+      }
+      if ((this.x < this.man.x)) {
+          this.change_x = 1;
+      }
+      if ((this.y < this.man.y)) {
+          this.change_y = 1;
+      }
+      if ((this.y > this.man.y)) {
+          this.change_y = -1;
       }
     }
-    if ((this.x < this.man.x)) {
-      if (this.board.canMoveTo(this.x + 1, this.y)) {
-        counter += 1;
-        direction = 90;
-        moved = true;
-        this.x += 1;
-      }
-    }
-    if ((this.y < this.man.y)) {
-      if (this.board.canMoveTo(this.x, this.y + 1)) {
-        counter += 1;
-        direction = 180;
-        moved = true;
-        this.y += 1;
-      }
-    }
-    if ((this.y > this.man.y)) {
-      if (this.board.canMoveTo(this.x, this.y - 1)) {
-        counter += 1;
-        direction = 0;
-        moved = true;
-        this.y -= 1;
-      }
-    }
-    if (this.x == man.x && this.y == man.y) {
-      board.captured();
+
+    if (this.board.canMoveTo(this.x + this.change_x, this.y + this.change_y)) {
+      this.x += this.change_x;
+      this.y += this.change_y;
+      moved = true;
+      //this.counter = 0;
     }
 
     if (!moved) {
-       loc = this.board.spawnLocation()
-      if (this.x < 0) {
-        counter += 1;
-        this.x = loc.x;
-      } else if (this.x > this.board.width) {
-        counter += 1;
-        this.x = loc.x;
-      } else if (this.y < 0) {
-        counter += 1;
-        this.y = loc.y;
-      } else if (this.y > this.board.height) {
-        counter += 1;
-        this.y = loc.y;
-      } else {
-        if (direction === 270 && canMoveTo(this.x + 1, this.y)) {
-          counter += 1;
-          this.x -= 1
-        }
-        if (direction === 90 && canMoveTo(this.x - 1, this.y)) {
-          counter += 1;
-          this.x -= 1
-        }
-        if (direction === 180 && canMoveTo(this.x, this.y - 1)) {
-          counter += 1;
-          this.y -= 1
-        }
-        if (direction === 0 && canMoveTo(this.x, this.y + 1)) {
-          counter += 1;
-          this.y += 1
-        }
+      // lets try a random direction
+      this.change_y = Math.floor(Math.random() * 3) - 1;
+      this.change_x = Math.floor(Math.random() * 3) - 1;
+    }
 
-      }
+    if (this.x == man.x && this.y == man.y) {
+      board.captured();
     }
-    if (counter > 3) {
-      counter = 0;
-      direction += 90 % 360;
-    }
+    this.counter += 1;
   }
 }
 
@@ -131,6 +92,7 @@ function Board(width, height, pixelWidth, context) {
   this.things = new Array();
   this.context.canvas.width = (width + 1) * pixelWidth;
   this.context.canvas.height = (height + 1) * pixelWidth;
+  this.deaths = 0;
 
   this.createCellArray = function() {
     var cells = new Array(this.width);
@@ -244,7 +206,8 @@ function Board(width, height, pixelWidth, context) {
   }
 
   this.captured = function() {
-    alert('boo')
+    this.deaths += 1
+    document.getElementById('deaths').innerHTML = "" + this.deaths;
   }
 }
 
