@@ -7,8 +7,8 @@ function Man(board, x, y, pixelWidth, context, colour) {
   this.board = board;
 
   this.draw = function() {
-    this.context.strokeStyle=this.colour;
-    this.context.strokeRect((this.x * this.pixelWidth) + 1, (this.y * this.pixelWidth) + 1, this.pixelWidth - 1, this.pixelWidth - 1)
+    this.context.fillStyle=this.colour;
+    this.context.fillRect((this.x * this.pixelWidth) + 1, (this.y * this.pixelWidth) + 1, this.pixelWidth - 1, this.pixelWidth - 1)
   }
 
   this.moveup = function() {
@@ -158,7 +158,7 @@ function Board(width, height, pixelWidth, context) {
   }
 
   this.canMoveTo = function(x, y) {
-    return ((x >= 0) && (x < this.width) && (y >= 0) && (y < this.height) && (this.cells[x][y] === 0));
+    return ((x >= 0) && (x < this.width - 1) && (y >= 0) && (y < this.height - 1) && (this.cells[x][y] === 0));
   }
 
   this.drawGrid = function() {
@@ -181,6 +181,7 @@ function Board(width, height, pixelWidth, context) {
     for (var x = 0; x < this.width; x += 1) {
       for (var y = 0; y < this.height; y += 1) {
         if (this.cells[x][y] === 1) {
+          this.context.fillStyle="black";
           this.context.fillRect((x * this.pixelWidth) + 1, (y * this.pixelWidth) + 1, this.pixelWidth - 1, this.pixelWidth - 1)
         }
       }
@@ -223,8 +224,10 @@ var start = function() {
   var man = new Man(board, loc.x, loc.y, 10, context, "red");
   loc = board.spawnLocation()
   var monster = new Monster(board, man, loc.x , loc.y, 10, context, "blue");
+  var monster2 = new Monster(board, man, loc.x , loc.y, 10, context, "yellow");
   board.add(man);
   board.add(monster);
+  board.add(monster2);
 
   document.onkeydown = function(e) {
     e = e || window.event;
