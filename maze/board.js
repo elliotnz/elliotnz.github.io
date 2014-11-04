@@ -62,70 +62,41 @@ function Monster(board, man, x, y, pixelWidth, context, colour)  {
   }
 
   this.turn = function() {
+    var multiplier = (this.board.attack) ? -1 : 1;
+    var moved = false;
+    if (this.counter % 4 == 0 || this.board.close(this.man, this.x, this.y)) {
+      this.change_x = 0; this.change_y = 0;
+      if ((this.x > this.man.x)) {
+        this.change_x = -1 * multiplier;
+      }
+      if ((this.x < this.man.x)) {
+        this.change_x = 1 * multiplier;
+      }
+      if ((this.y < this.man.y)) {
+        this.change_y = 1 * multiplier;
+      }
+      if ((this.y > this.man.y)) {
+        this.change_y = -1 * multiplier;
+      }
+    }
+    if (this.board.canMoveTo(this, this.x + this.change_x, this.y + this.change_y)) {
+      this.x += this.change_x;
+      this.y += this.change_y;
+      moved = true;
+      //this.counter = 0;
+    }
+
+    if (!moved) {
+      // lets try a random direction
+      this.change_y = Math.floor(Math.random() * 3) - 1;
+      this.change_x = Math.floor(Math.random() * 3) - 1;
+    }
+    this.counter += 1;
     if (this.board.attack === false) {
-      var moved = false;
-      if (this.counter % 4 == 0) {
-        this.change_x = 0; this.change_y = 0;
-        if ((this.x > this.man.x)) {
-            this.change_x = -1;
-        }
-        if ((this.x < this.man.x)) {
-            this.change_x = 1;
-        }
-        if ((this.y < this.man.y)) {
-            this.change_y = 1;
-        }
-        if ((this.y > this.man.y)) {
-            this.change_y = -1;
-        }
-      }
-
-      if (this.board.canMoveTo(this, this.x + this.change_x, this.y + this.change_y)) {
-        this.x += this.change_x;
-        this.y += this.change_y;
-        moved = true;
-        //this.counter = 0;
-      }
-
-      if (!moved) {
-        // lets try a random direction
-        this.change_y = Math.floor(Math.random() * 3) - 1;
-        this.change_x = Math.floor(Math.random() * 3) - 1;
-      }
       if (this.x == man.x && this.y == man.y) {
         board.captured();
       }
-      this.counter += 1;
     } else if (this.board.attack === true) {
-      var moved = false;
-      if (this.counter % 4 == 0) {
-        this.change_x = 0; this.change_y = 0;
-        if ((this.x < this.man.x)) {
-            this.change_x = -1;
-        }
-        if ((this.x > this.man.x)) {
-            this.change_x = 1;
-        }
-        if ((this.y > this.man.y)) {
-            this.change_y = 1;
-        }
-        if ((this.y < this.man.y)) {
-            this.change_y = -1;
-        }
-      }
-
-      if (this.board.canMoveTo(this, this.x + this.change_x, this.y + this.change_y)) {
-        this.x += this.change_x;
-        this.y += this.change_y;
-        moved = true;
-        //this.counter = 0;
-      }
-
-      if (!moved) {
-        // lets try a random direction
-        this.change_y = Math.floor(Math.random() * 3) - 1;
-        this.change_x = Math.floor(Math.random() * 3) - 1;
-      }
       if (this.x === man.x && this.y === man.y) {
         var newLocation = this.board.spawnLocation()
         this.x = newLocation.x;
@@ -135,6 +106,7 @@ function Monster(board, man, x, y, pixelWidth, context, colour)  {
     }
   }
 }
+
 
 function Energy(board, man, x, y, pixelWidth, context)  {
   this.x = x;
@@ -215,6 +187,10 @@ function Board(width, height, pixelWidth, context) {
       }
     }
     return true;
+  }
+
+  this.close = function(man, x, y) {
+    return (x >= (man.x - 3)) && (x <= (man.x + 3)) && (y >= (man.y - 3)) && (y <= (man.y + 3))
   }
 
   this.drawGrid = function() {
