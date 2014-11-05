@@ -83,10 +83,9 @@ function Monster(board, man, x, y, pixelWidth, context, colour)  {
       this.x += this.change_x;
       this.y += this.change_y;
       moved = true;
-      //this.counter = 0;
     }
 
-    if (!moved) {
+    if (moved === false) {
       // lets try a random direction
       this.change_y = Math.floor(Math.random() * 3) - 1;
       this.change_x = Math.floor(Math.random() * 3) - 1;
@@ -107,6 +106,77 @@ function Monster(board, man, x, y, pixelWidth, context, colour)  {
   }
 }
 
+function Teleporter(board, man, x, y, pixelWidth, context, colour)  {
+  this.x = x;
+  this.y = y;
+  this.pixelWidth = pixelWidth;
+  this.context = context;
+  this.colour = colour;
+  this.board = board;
+  this.man = man;
+
+  this.isMonster = function() {
+    return true;
+  }
+
+  this.turn = function() {
+    var multiplier = (this.board.attack) ? -1 : 1;
+    var moved = false;
+    if (this.board.far(this.man, this.x, this.y)) {
+      this.change_x = 0; this.change_y = 0;
+      if ((this.x > this.man.x)) {
+        this.change_x = Math.floor(Math.random() * -3 * multiplier) - 2;
+        //this.change_x = -10 * multiplier;
+      } else if ((this.x < this.man.x)) {
+        this.change_x = Math.floor(Math.random() * 3 * multiplier) + 2;
+        //this.change_x = 10 * multiplier;
+      }
+      if ((this.y < this.man.y)) {
+        this.change_y = Math.floor(Math.random() * 3 * multiplier) + 2;
+        //this.change_y = 10 * multiplier;
+      } else if ((this.y > this.man.y)) {
+        this.change_y = Math.floor(Math.random() * -3 * multiplier) - 2;
+        //this.change_y = -10 * multiplier;
+      }
+    }
+    if (this.board.close(this.man, this.x, this.y)) {
+      this.change_x = 0; this.change_y = 0;
+      if ((this.x > this.man.x)) {
+        this.change_x = -1 * multiplier;
+      }
+      if ((this.x < this.man.x)) {
+        this.change_x = 1 * multiplier;
+      }
+      if ((this.y < this.man.y)) {
+        this.change_y = 1 * multiplier;
+      }
+      if ((this.y > this.man.y)) {
+        this.change_y = -1 * multiplier;
+      }
+    }
+    if (this.board.canMoveTo(this, this.x + this.change_x, this.y + this.change_y)) {
+      this.x += this.change_x;
+      this.y += this.change_y;
+      moved = true;
+    }
+    if (moved === false) {
+      this.change_y = Math.floor(Math.random() * -10) + 3;
+      this.change_x = Math.floor(Math.random() * 10) + 4;
+    }
+    if (this.board.attack === false) {
+      if (this.x == man.x && this.y == man.y) {
+        board.captured();
+      }
+    }
+    else if (this.board.attack === true) {
+      if (this.x === man.x && this.y === man.y) {
+        var newLocation = this.board.spawnLocation()
+        this.x = newLocation.x;
+        this.y = newLocation.y;
+      }
+    }
+  }
+}
 
 function Energy(board, man, x, y, pixelWidth, context)  {
   this.x = x;
@@ -128,6 +198,7 @@ function Energy(board, man, x, y, pixelWidth, context)  {
 
 Monster.prototype = new Thing();
 Energy.prototype = new Thing();
+Teleporter.prototype = new Thing();
 
 function Board(width, height, pixelWidth, context) {
   this.width = width;
@@ -191,6 +262,26 @@ function Board(width, height, pixelWidth, context) {
 
   this.close = function(man, x, y) {
     return (x >= (man.x - 3)) && (x <= (man.x + 3)) && (y >= (man.y - 3)) && (y <= (man.y + 3))
+  }
+
+  this.far = function(man, x, y) {
+    var checkX = function() {
+      if (x > man.x) {
+        return (x >= (man.x + 10))
+      }
+      if (x < man.x) {
+        return (x <= (man.x - 10))
+      }
+    }
+    var checkY = function() {
+      if (y > man.y) {
+        return (y >= (man.y + 10))
+      }
+      if (y < man.y) {
+        return (y <= (man.y - 10))
+      }
+    }
+    return (checkX() || checkY())
   }
 
   this.drawGrid = function() {
@@ -274,12 +365,15 @@ var start = function() {
   var location = board.spawnLocation()
   var man = new Man(board, loc.x, loc.y, 10, context, "blue");
   loc = board.spawnLocation()
-  var monster = new Monster(board, man, loc.x, loc.y + 10, 10, context, "yellow");
+  var monster = new Monster(board, man, loc.x, loc.y + 10, 10, context, "red");
   loc = board.spawnLocation()
   var monster2 = new Monster(board, man, loc.x + 10, loc.y, 10, context, "red");
+  loc = board.spawnLocation()
+  var teleporter = new Teleporter(board, man, loc.x, loc.y, 10, context, "yellow");
   board.add(man);
   board.add(monster);
   board.add(monster2);
+  board.add(teleporter);
 
 
   document.onkeydown = function(e) {
@@ -326,7 +420,7 @@ var start = function() {
     }
   }, 1000 / 60)
   setInterval(function() {
-    board.turn();
+      board.turn();
   }, 1000 / 5);
 
   setInterval(function() {
