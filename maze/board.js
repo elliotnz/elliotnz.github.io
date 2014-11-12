@@ -126,17 +126,13 @@ function Teleporter(board, man, x, y, pixelWidth, context, colour)  {
       this.change_x = 0; this.change_y = 0;
       if ((this.x > this.man.x)) {
         this.change_x = Math.floor(Math.random() * -3 * multiplier) - 2;
-        //this.change_x = -10 * multiplier;
       } else if ((this.x < this.man.x)) {
         this.change_x = Math.floor(Math.random() * 3 * multiplier) + 2;
-        //this.change_x = 10 * multiplier;
       }
       if ((this.y < this.man.y)) {
-        this.change_y = Math.floor(Math.random() * 3 * multiplier) + 2;
-        //this.change_y = 10 * multiplier;
+        this.change_y = Math.floor(Math.random() * 3 * multiplier) + 2
       } else if ((this.y > this.man.y)) {
         this.change_y = Math.floor(Math.random() * -3 * multiplier) - 2;
-        //this.change_y = -10 * multiplier;
       }
     }
     if (this.board.close(this.man, this.x, this.y)) {
@@ -213,21 +209,6 @@ function Board(width, height, pixelWidth, context) {
   this.health = 100;
   this.attack = false
 
-  this.createCellArray = function() {
-    var cells = new Array(this.width);
-    for (var x = 0; x < this.width; x += 1) {
-      cells[x] = new Array(this.height);
-
-    }
-    for (var x=0; x < this.width; x += 1) {
-      for (var y=0; y < this.height; y += 1) {
-        cells[x][y] = 0
-      }
-    }
-    return cells;
-  }
-  this.cells = this.createCellArray();
-
   this.createMaze = function() {
     for (var i=0; i < this.width; i += 1) {
       for (var j=0; j < this.height; j += 1) {
@@ -240,6 +221,20 @@ function Board(width, height, pixelWidth, context) {
   this.add = function(object) {
     this.things.push(object);
   }
+
+  this.createCellArray = function() {
+    var cells = new Array(this.width);
+    for (var x = 0; x < this.width; x += 1) {
+      cells[x] = new Array(this.height);
+    }
+    for (var x=0; x < this.width; x += 1) {
+      for (var y=0; y < this.height; y += 1) {
+        cells[x][y] = 0
+      }
+    }
+    return cells;
+  }
+  this.cells = this.createCellArray();
 
   this.canMoveTo = function(thing, x, y) {
     var withinBoardAndNotWall = ((x >= 0) && (x < this.width)
@@ -367,7 +362,7 @@ var start = function() {
   loc = board.spawnLocation()
   var monster = new Monster(board, man, loc.x, loc.y + 10, 10, context, "red");
   loc = board.spawnLocation()
-  var monster2 = new Monster(board, man, loc.x + 10, loc.y, 10, context, "red");
+  var monster2 = new Monster(board, man, loc.x + 1, loc.y, 10, context, "red");
   loc = board.spawnLocation()
   var teleporter = new Teleporter(board, man, loc.x, loc.y, 10, context, "yellow");
   board.add(man);
@@ -427,3 +422,6 @@ var start = function() {
     board.checkAlive();
   }, 10);
 }
+
+
+//500!
