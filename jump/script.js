@@ -2,7 +2,7 @@ function Thing(board, x, y) {
   this.x = x;
   this.y = y;
   this.board = board;
-  this.hForce = null;
+  this.vForce = null;
   this.xChange = 0;
 
   this.turn = function() {}
@@ -25,30 +25,30 @@ function Man(board, line, x, y) {
   }
 
   this.turn = function() {
-    if (this.hForce == null) {
+    if (this.vForce == null) {
 
-    } else if (this.hForce >= 0) {
+    } else if (this.vForce >= 0) {
       if (this.lineBelow) {
         this.lineBelow = false;
       }
-      if ((this.y >= this.line.y && this.y - 2.5 < this.line.y + this.height + this.line.length) && (this.x <= this.line.x + this.line.width && this.x >= this.line.x)) {
-        this.hForce -= 1;
+      if ((this.y >= this.line.y && this.y - 2.5 < this.line.y + this.height + this.line.height) && (this.x <= this.line.x + this.line.width && this.x >= this.line.x)) {
+        this.vForce -= 1;
         this.lineAbove = true;
       } else if (!this.lineAbove){
-        this.hForce -= 1;
-        this.y -= (this.hForce * .7);
+        this.vForce -= 1;
+        this.y -= (this.vForce * .7);
       }
-    } else if (this.hForce < 0) {
+    } else if (this.vForce < 0) {
       if (this.lineBelow) {
         this.lineBelow = false;
       }
       if ((this.y <= this.line.y && this.y + 2.5 > this.line.y) && (this.x <= this.line.x + this.line.width && this.x >= this.line.x)) {
         this.lineBelow = true;
       } else if (!this.lineBelow) {
-        this.hForce -= .25;
-        this.y -= (this.hForce * .7);
+        this.vForce -= .25;
+        this.y -= (this.vForce * .7);
       }
-      if (this.x < this.line.x + this.line.width && this.x > this.line.x && this.y < this.line.y && this.y > this.line.y + this.line.length) {
+      if (this.x < this.line.x + this.line.width && this.x > this.line.x && this.y < this.line.y && this.y > this.line.y + this.line.height) {
         //this.lineBelow = false;
         this.lineBelow = true;
       }
@@ -57,11 +57,11 @@ function Man(board, line, x, y) {
       // }
       if ((this.board.onGround(this))) {
         this.lineBelow = false;
-        this.hForce = null;
+        this.vForce = null;
       }
       if (this.lineBelow) {
         this.lineBelow = true;
-        //this.hForce = null;
+        //this.vForce = null;
       } else {
         this.lineBelow = false;
       }
@@ -77,7 +77,7 @@ function Man(board, line, x, y) {
   }
   this.jump = function() {
     if ((this.board.onGround(this)) || this.lineBelow) {
-      this.hForce = 10;
+      this.vForce = 10;
     }
   }
   this.moveleft = function() {
@@ -98,12 +98,12 @@ function Line(board, x, y) {
   this.x = x;
   this.y = y;
   this.width = 25;
-  this.length = 5;
+  this.height = 5;
 
   this.draw = function() {
     this.board.context.fillStyle = "black";
     // this.board.context.fillRect(this.x, this.y, this.width, this.y)
-    this.board.context.fillRect(this.x, this.y, this.width, this.length)
+    this.board.context.fillRect(this.x, this.y, this.width, this.height)
     // this.board.context.beginPath();
     // this.board.context.moveTo(this.x, this.y);
     // this.board.context.lineTo(this.width, this.y);
@@ -147,16 +147,19 @@ function Board(width, height, pixelWidth, context) {
   }
 
   this.canMoveLeft = function(x, y) {
-    if ((y > this.line.y && y < this.line.y + this.line.length + 5) && (x < this.line.x + this.line.width + 1 && x > this.line.x)) {
+    if ((y > this.line.y && y < this.line.y + this.line.height + 5)
+           && (x < this.line.x + this.line.width + 1 && x > this.line.x)) {
       return false;
     }
     return (x !== 0);
   }
   this.canJumpTo = function(x, y) {
-  return (x < this.line.x || x > this.line.x + this.line.width) && (y > this.line.y + this.line.length || y < this.line.y)
+    return (x < this.line.x || x > this.line.x + this.line.width)
+          && (y > this.line.y + this.line.height || y < this.line.y)
   }
   this.canMoveRight = function(x, y) {
-    if ((y > this.line.y && y < this.line.y + this.line.length) && (x < this.line.x + this.line.width + 1 && x > this.line.x)) {
+    if ((y > this.line.y && y < this.line.y + this.line.height)
+        && (x < this.line.x + this.line.width + 1 && x > this.line.x)) {
       return false;
     }
     return (x !== this.width - 1);
