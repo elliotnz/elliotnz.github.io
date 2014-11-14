@@ -7,60 +7,111 @@ function Thing(board, x, y) {
 
   this.turn = function() {}
 
-  this.draw = function() {
-    this.board.context.fillStyle = "blue";
-    this.board.context.fillRect(this.x, this.y - 9, 5, 10)
-  }
 }
-function Man(board, x, y) {
+function Man(board, line, x, y) {
   this.x = x;
   this.y = y;
   this.colour = "blue";
   this.board = board;
+  this.line = line;
+  this.lineAbove = false;
+  this.lineBelow = false;
+  this.height = 10;
+  this.width = 5;
+
+  this.draw = function() {
+    this.board.context.fillStyle = "blue";
+    this.board.context.fillRect(this.x, this.y - this.height + 1, this.width, this.height)
+  }
 
   this.turn = function() {
     if (this.hForce == null) {
 
     } else if (this.hForce >= 0) {
-      this.hForce -= 1;
-      this.y -= (this.hForce * .3);
+      if (this.lineBelow) {
+        this.lineBelow = false;
+      }
+      if ((this.y >= this.line.y && this.y - 2.5 < this.line.y + this.height + this.line.length) && (this.x <= this.line.x + this.line.width && this.x >= this.line.x)) {
+        this.hForce -= 1;
+        this.lineAbove = true;
+      } else if (!this.lineAbove){
+        this.hForce -= 1;
+        this.y -= (this.hForce * .7);
+      }
     } else if (this.hForce < 0) {
-      this.hForce -= 1;
-      this.y -= (this.hForce * .3);
-      if (this.board.onGround(this.x, this.y)) {
+      if (this.lineBelow) {
+        this.lineBelow = false;
+      }
+      if ((this.y <= this.line.y && this.y + 2.5 > this.line.y) && (this.x <= this.line.x + this.line.width && this.x >= this.line.x)) {
+        this.lineBelow = true;
+      } else if (!this.lineBelow) {
+        this.hForce -= .25;
+        this.y -= (this.hForce * .7);
+      }
+      if (this.x < this.line.x + this.line.width && this.x > this.line.x && this.y < this.line.y && this.y > this.line.y + this.line.length) {
+        //this.lineBelow = false;
+        this.lineBelow = true;
+      }
+      // if ((this.x > this.line.x) && (parseInt(this.y) + 1 === this.line.y)) {
+      //   this.lineBelow = false;
+      // }
+      if ((this.board.onGround(this))) {
+        this.lineBelow = false;
         this.hForce = null;
       }
+      if (this.lineBelow) {
+        this.lineBelow = true;
+        //this.hForce = null;
+      } else {
+        this.lineBelow = false;
+      }
     }
-    this.x += this.xChange;
-    this.xChange = 0;
+    if (this.board.canMoveRight(this.x - 1, this.y)) {
+      if (this.board.canMoveLeft(this.x - 1, this.y)) {
+        this.x += this.xChange * 3;
+        this.xChange = 0;
+        this.lineAbove = false;
+        //this.lineBelow = false;
+      }
+    }
   }
   this.jump = function() {
-    if (this.board.onGround(this.x, this.y)) {
+    if ((this.board.onGround(this)) || this.lineBelow) {
       this.hForce = 10;
     }
   }
   this.moveleft = function() {
-    this.xChange = -1;
-  }
-  this.moveright = function() {
-    this.xChange = 1;
-  }
-  this.upleft = function() {
-    if (!this.board.onGround(this.x, this.y)) {
+    if (this.board.canMoveLeft(this.x - 1 * 3, this.y)) {
       this.xChange = -1;
-    } else {
-      this.moveleft()
     }
   }
-  this.upright = function() {
-    if (!this.board.onGround(this.x, this.y)) {
-      this.xChange = 1;
-    } else {
-      this.moveright()
+  this.moveright = function() {
+    if (this.board.canMoveRight(this.x + 1 * 10, this.y)) {
+     this.xChange = 1;
     }
   }
 }
 Man.prototype = new Thing()
+
+function Line(board, x, y) {
+  this.board = board
+  this.x = x;
+  this.y = y;
+  this.width = 25;
+  this.length = 5;
+
+  this.draw = function() {
+    this.board.context.fillStyle = "black";
+    // this.board.context.fillRect(this.x, this.y, this.width, this.y)
+    this.board.context.fillRect(this.x, this.y, this.width, this.length)
+    // this.board.context.beginPath();
+    // this.board.context.moveTo(this.x, this.y);
+    // this.board.context.lineTo(this.width, this.y);
+    // this.board.context.stroke();
+  }
+}
+
+Line.prototype = new Thing()
 
 function Board(width, height, pixelWidth, context) {
   this.width = width;
@@ -74,12 +125,16 @@ function Board(width, height, pixelWidth, context) {
   this.context.canvas.style.height = '' + (height * pixelWidth) + 'px';
   this.keyMap = [];
   this.man = null;
+  this.line = null;
 
   this.add = function(thing) {
     this.things.push(thing);
   }
   this.addMan = function(man) {
     this.man = man;
+  }
+  this.addLine = function(line) {
+    this.line = line;
   }
   this.drawCells = function() {
     this.clearBoard()
@@ -91,12 +146,20 @@ function Board(width, height, pixelWidth, context) {
     this.context.clearRect(0, 0, this.width, this.height)
   }
 
-  this.canMoveTo = function(x, y) {
-    var withinBoardAndNotWall = (x !== this.width) && (y !== this.height);
-    if (!withinBoardAndNotWall) {
+  this.canMoveLeft = function(x, y) {
+    if ((y > this.line.y && y < this.line.y + this.line.length + 5) && (x < this.line.x + this.line.width + 1 && x > this.line.x)) {
       return false;
     }
-    return true;
+    return (x !== 0);
+  }
+  this.canJumpTo = function(x, y) {
+  return (x < this.line.x || x > this.line.x + this.line.width) && (y > this.line.y + this.line.length || y < this.line.y)
+  }
+  this.canMoveRight = function(x, y) {
+    if ((y > this.line.y && y < this.line.y + this.line.length) && (x < this.line.x + this.line.width + 1 && x > this.line.x)) {
+      return false;
+    }
+    return (x !== this.width - 1);
   }
 
   this.turn = function() {
@@ -111,20 +174,16 @@ function Board(width, height, pixelWidth, context) {
     }
     if (this.keyMap['39']) {
       this.man.moveright();
-    }  //else if (this.keyMap['37'] && this.keyMap['38']) {
-    //   alert("f")
-    // }
-    //   man.upleft()
-    // }
-    // if (e.keyCode == '39') {
-    //   man.moveright()
-    // } else  if ((e.keyCode == '39') && (e.keyCode == '38')){
-    //   man.upright()
-    // }
+    }
   }
 
-  this.onGround = function(x,y) {
-    return (!this.canMoveTo(x, y + 1))
+  this.onGround = function(thing) {
+    if (thing.y >= this.height - 1) {
+      this.y = this.height;
+      return true;
+    } else {
+      return false;
+    }
   }
 
   this.keyUpDown = function(e){
@@ -141,12 +200,17 @@ var start = function() {
 
   board = new Board(200, 200, 1, context);
 
-  var man = new Man(board, 5, board.height - 1)
+  var line = new Line(board, board.width / 2 - 10, board.height - 20)
+
+  var man = new Man(board, line, board.width / 2 - 10, board.height - 1)
+
 
 
   board.add(man);
+  board.add(line);
 
   board.addMan(man);
+  board.addLine(line);
 
   document.onkeydown = board.keyUpDown;
   document.onkeyup = board.keyUpDown;
