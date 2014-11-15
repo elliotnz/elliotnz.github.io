@@ -24,15 +24,41 @@ function Man(board, x, y, height, width) {
     this.board.context.fillRect(this.x, this.y, this.width, this.height)
   }
 
+
+  this.canMoveUp = function() {
+    return (!this.board.isBlocked(this.x, this.y - 1) && !this.board.isBlocked(this.x + this.width, this.y - 1))
+  }
+
+  this.falling = function() {
+    return (!this.board.isBlocked(this.x, this.y + this.height + 1) && !this.board.isBlocked(this.x + this.width, this.y + this.height + 1))
+  }
   this.turn = function() {
     // look above us
-    if (this.vForce > 0 && (!this.board.isBlocked(this.x, this.y - 1) && !this.board.isBlocked(this.x + this.width, this.y - 1))) {
-      this.y -= 1; //parseInt(this.vForce * .7);
+    if (this.vForce > 0 && this.canMoveUp()) {
+      // move to the positon unless we hit something first
+      var pointsToMove = Math.round(this.vForce * .3);
+      for (var i = 0; i < pointsToMove; i++) {
+        if (this.canMoveUp()) {
+          this.y -= 1;
+        } else {
+          this.vForce = null;
+        }
+      }
       this.vForce -= 1;
-    } else if (!this.board.isBlocked(this.x, this.y + this.height + 1) && !this.board.isBlocked(this.x + this.width, this.y + this.height + 1)) {
+    } else if (this.falling()) {
       // if we are falling
-      this.y += 1;
-      this.vForce = null;
+      if (this.vForce === null);
+        this.vForce = 0
+      this.vForce += 1;
+      var pointsToMove = Math.round(this.vForce * .7);
+      for (var i = 0; i < pointsToMove; i++) {
+        if (this.falling()) {
+          this.y += 1;
+        } else {
+          this.vForce = null;
+        }
+      }
+
     } else {
       this.vForce = null;
     }
@@ -44,7 +70,7 @@ function Man(board, x, y, height, width) {
   }
   this.jump = function() {
     if (this.vForce == null)
-      this.vForce = 30;
+      this.vForce = 10;
   }
 
   this.moveleft = function() {
