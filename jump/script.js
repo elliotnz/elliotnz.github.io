@@ -26,12 +26,33 @@ function Man(board, x, y, height, width) {
 
 
   this.canMoveUp = function() {
-    return (!this.board.isBlocked(this.x, this.y - 1) && !this.board.isBlocked(this.x + this.width, this.y - 1))
+    return (!this.board.isBlocked(this.x, this.y - 1)
+     && !this.board.isBlocked(this.x + this.width, this.y + this.height)
+     && !this.board.isBlocked(this.x, this.y + this.height / 2)
+     && !this.board.isBlocked(this.x + this.width, this.y + this.height / 2))
   }
 
   this.falling = function() {
-    return (!this.board.isBlocked(this.x, this.y + this.height + 1) && !this.board.isBlocked(this.x + this.width, this.y + this.height + 1))
+    return !this.onGround()
+    //return (!this.board.isBlocked(this.x, this.y + this.height + 1) && (!this.board.isBlocked(this.x + this.width + 1, this.y + this.height + 1)))
   }
+
+  this.onGround = function() {
+    return (this.board.isBlocked(this.x, this.y + this.height + 1) || (this.board.isBlocked(this.x + this.width, this.y + this.height + 1)))
+  }
+
+  this.againstLeftLine = function() {
+    return (this.board.isBlocked(this.x - 1, this.y) ||
+      this.board.isBlocked(this.x - 1, this.y + this.height) ||
+      this.board.isBlocked(this.x - 1, this.y + this.height / 2));
+  }
+
+  this.againstRightLine = function() {
+    return (this.board.isBlocked(this.x + this.width + 1, this.y) ||
+      this.board.isBlocked(this.x + this.width + 1, this.y + this.height) ||
+      this.board.isBlocked(this.x + this.width + 1, this.y + this.height / 2));
+  }
+
   this.turn = function() {
     // look above us
     if (this.vForce > 0 && this.canMoveUp()) {
@@ -48,10 +69,10 @@ function Man(board, x, y, height, width) {
     } else if (this.falling()) {
       // if we are falling
       if (this.vForce === null);
-        this.vForce = 0
+        this.vForce = 0;
       this.vForce += 1;
       var pointsToMove = Math.round(this.vForce * .7);
-      for (var i = 0; i < pointsToMove; i++) {
+      for (var i = 0; i < pointsToMove; i += 1) {
         if (this.falling()) {
           this.y += 1;
         } else {
@@ -62,15 +83,15 @@ function Man(board, x, y, height, width) {
     } else {
       this.vForce = null;
     }
-    if ((this.xChange < 0 && !this.board.isBlocked(this.x - 1, this.y)) ||
-       (this.xChange > 0 && !this.board.isBlocked(this.x + this.width + 1, this.y))) {
+    if ((this.xChange < 0 && !this.againstLeftLine()) ||
+       (this.xChange > 0 && !this.againstRightLine())) {
        this.x += this.xChange * this.step;
     }
     this.xChange = 0;
   }
   this.jump = function() {
     if (this.vForce == null)
-      this.vForce = 10;
+      this.vForce = 15;
   }
 
   this.moveleft = function() {
