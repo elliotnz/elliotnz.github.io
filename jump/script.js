@@ -30,9 +30,18 @@ function Man(board, x, y, height, width) {
     this.board.context.fillRect(this.x, this.y, this.width, this.height)
   }
 
+  this.xDirection = function() {
+    if (this.lastXChange === 1) {
+      return (this.width)
+    } else {
+      return (-3)
+    }
+  }
+
   this.shoot = function() {
-    if (this.lastBulletTime == null || this.lastBulletTime < (getMilliseconds() - 800)) {
-      var bullet = new Bullet(board, this.x, this.y + this.height / 2, this.lastXChange)
+    if (this.lastBulletTime == null || this.lastBulletTime < (getMilliseconds() - 300)) {
+      var getXDirection = this.xDirection()
+      var bullet = new Bullet(board, this.x + getXDirection, this.y + this.height / 2, this.lastXChange)
       this.board.add(bullet);
       this.lastBulletTime = getMilliseconds();
     }
@@ -286,5 +295,5 @@ var start = function() {
 
   setInterval(function() {
     board.turn()
-  }, 1000 / 30);
+  }, 1000 / 60);
 }
