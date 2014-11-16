@@ -191,9 +191,13 @@ var start = function() {
 
   board = new Board(200, 200, 1, context);
 
-  var line = new Line(board, board.width / 2 - 10, board.height - 20, 25, 5)
-  var line2 = new Line(board, board.width / 2 - 5, board.height - 40, 25, 5)
-  var line3 = new Line(board, board.width / 2, board.height - 60, 25, 5)
+  var line = new Line(board, board.width / 2 - 15, board.height - 20, 25, 5)
+  var line2 = new Line(board, board.width / 2 - 5, board.height - 50, 25, 5)
+  var line3 = new Line(board, board.width / 2 + 5, board.height - 80, 25, 5)
+  var line4 = new Line(board, board.width / 2 + 15, board.height - 110, 25, 5)
+  var line5 = new Line(board, board.width / 2 + 25, board.height - 140, 25, 5)
+  var line6 = new Line(board, board.width / 2 + 35, board.height - 170, 25, 5)
+  var top = new Line(board, 0, 0, board.width, 1)
   var bottom = new Line(board, 0, board.height - 1, board.width, 1)
   var left = new Line(board, 0, 0, 1, board.height)
   var right = new Line(board, board.width - 1, 0, 1, board.height)
@@ -208,6 +212,11 @@ var start = function() {
   board.addLines(line);
   board.addLines(line2);
   board.addLines(line3);
+  board.addLines(line4);
+  board.addLines(line5);
+  board.addLines(line6);
+
+  board.addLines(top);
   board.addLines(bottom);
   board.addLines(left);
   board.addLines(right);
