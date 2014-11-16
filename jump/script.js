@@ -2,28 +2,41 @@ function Thing(board, x, y) {
   this.x = x;
   this.y = y;
   this.board = board;
-  this.vForce = null;
-  this.xChange = 0;
 
   this.turn = function() {}
 
 }
+
+function getMilliseconds() {
+  return new Date().getTime();
+}
+
 function Man(board, x, y, height, width) {
   this.x = x;
   this.y = y;
-  this.colour = "blue";
   this.board = board;
   this.lineAbove = false;
   this.lineBelow = false;
   this.height = height;
   this.width = width;
+  this.vForce = null;
+  this.xChange = 0;
+  this.lastXChange = 1;
   this.step = 1;
+  this.lastBulletTime = null;
 
   this.draw = function() {
     this.board.context.fillStyle = "blue";
     this.board.context.fillRect(this.x, this.y, this.width, this.height)
   }
 
+  this.shoot = function() {
+    if (this.lastBulletTime == null || this.lastBulletTime < (getMilliseconds() - 800)) {
+      var bullet = new Bullet(board, this.x, this.y + this.height / 2, this.lastXChange)
+      this.board.add(bullet);
+      this.lastBulletTime = getMilliseconds();
+    }
+  }
 
   this.canMoveUp = function() {
     return (!this.board.isBlocked(this.x, this.y - 1)
@@ -58,9 +71,9 @@ function Man(board, x, y, height, width) {
     if (this.vForce > 0 && this.canMoveUp()) {
       // move to the positon unless we hit something first
       var pointsToMove = Math.round(this.vForce * .3);
-      for (var i = 0; i < pointsToMove; i++) {
+      for (var i = 0; i < pointsToMove; i += 1) {
         if (this.canMoveUp()) {
-          this.y -= 1;
+          this.y -= 0.5;
         } else {
           this.vForce = null;
         }
@@ -72,7 +85,7 @@ function Man(board, x, y, height, width) {
         this.vForce = 0;
       this.vForce += 1;
       var pointsToMove = Math.round(this.vForce * .7);
-      for (var i = 0; i < pointsToMove; i += 1) {
+      for (var i = 0; i < pointsToMove; i += 0.25) {
         if (this.falling()) {
           this.y += 1;
         } else {
@@ -91,14 +104,16 @@ function Man(board, x, y, height, width) {
   }
   this.jump = function() {
     if (this.vForce == null)
-      this.vForce = 15;
+      this.vForce = 25;
   }
 
   this.moveleft = function() {
       this.xChange = -1;
+      this.lastXChange = -1;
   }
   this.moveright = function() {
      this.xChange = 1;
+     this.lastXChange = 1;
   }
 }
 Man.prototype = new Thing()
@@ -118,6 +133,34 @@ function Line(board, x, y, width, height) {
 
 Line.prototype = new Thing()
 
+function Bullet(board, x, y, xChange) {
+  this.board = board;
+  this.x = x;
+  this.y = y;
+  this.width = 2
+  this.height = 2;
+  this.shoot = null;
+  this.xChange = xChange;
+  this.step = 2;
+
+  this.draw = function() {
+    this.board.context.fillStyle = "gold";
+    this.board.context.fillRect(this.x, this.y, this.width, this.height)
+  }
+
+  this.turn = function() {
+    for (var i = 0; i < this.step; i++) {
+      this.x += this.xChange;
+      if (this.board.isBlocked(this.x, this.y)) {
+        this.board.remove(this);
+        return;
+      }
+    }
+  }
+}
+
+Bullet.prototype = new Thing()
+
 function Board(width, height, pixelWidth, context) {
   this.width = width;
   this.height = height;
@@ -135,19 +178,30 @@ function Board(width, height, pixelWidth, context) {
   this.add = function(thing) {
     this.things.push(thing);
   }
+
+  this.remove = function(thing) {
+    var index = this.things.indexOf(thing)
+    if (index > -1) {
+      this.things.splice(index, 1);
+    }
+  }
+
   this.addMan = function(man) {
     this.man = man;
   }
+
   this.addLines = function(line) {
     this.lines.push(line);
     this.add(line);
   }
+
   this.drawCells = function() {
     this.clearBoard()
     for (i = 0; i< this.things.length; i++) {
       this.things[i].draw()
     }
   }
+
   this.clearBoard = function() {
     this.context.clearRect(0, 0, this.width, this.height)
   }
@@ -174,6 +228,9 @@ function Board(width, height, pixelWidth, context) {
     }
     if (this.keyMap['39']) {
       this.man.moveright();
+    }
+    if (this.keyMap['32']) {
+      this.man.shoot();
     }
   }
 
@@ -204,8 +261,6 @@ var start = function() {
 
   var man = new Man(board, board.width / 2 - 10, board.height - 2 - 10, 10, 5)
 
-
-
   board.add(man);
   board.addMan(man);
 
@@ -226,7 +281,10 @@ var start = function() {
   document.onkeyup = board.keyUpDown;
 
   setInterval(function() {
-    board.turn()
     board.drawCells();
   }, 1000 / 60);
+
+  setInterval(function() {
+    board.turn()
+  }, 1000 / 30);
 }
