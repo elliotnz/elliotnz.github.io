@@ -5,48 +5,6 @@ function Thing(board, x, y) {
 
   this.turn = function() {}
 
-}
-
-function getMilliseconds() {
-  return new Date().getTime();
-}
-
-function Man(board, x, y, height, width) {
-  this.x = x;
-  this.y = y;
-  this.board = board;
-  this.lineAbove = false;
-  this.lineBelow = false;
-  this.height = height;
-  this.width = width;
-  this.vForce = null;
-  this.xChange = 0;
-  this.lastXChange = 1;
-  this.step = 1;
-  this.lastBulletTime = null;
-
-  this.draw = function() {
-    this.board.context.fillStyle = "blue";
-    this.board.context.fillRect(this.x, this.y, this.width, this.height)
-  }
-
-  this.xDirection = function() {
-    if (this.lastXChange === 1) {
-      return (this.width)
-    } else {
-      return (-3)
-    }
-  }
-
-  this.shoot = function() {
-    if (this.lastBulletTime == null || this.lastBulletTime < (getMilliseconds() - 300)) {
-      var getXDirection = this.xDirection()
-      var bullet = new Bullet(board, this.x + getXDirection, this.y + this.height / 2, this.lastXChange)
-      this.board.add(bullet);
-      this.lastBulletTime = getMilliseconds();
-    }
-  }
-
   this.canMoveUp = function() {
     return (!this.board.isBlocked(this.x, this.y - 1)
      && !this.board.isBlocked(this.x + this.width, this.y + this.height)
@@ -73,6 +31,71 @@ function Man(board, x, y, height, width) {
     return (this.board.isBlocked(this.x + this.width + 1, this.y) ||
       this.board.isBlocked(this.x + this.width + 1, this.y + this.height) ||
       this.board.isBlocked(this.x + this.width + 1, this.y + this.height / 2));
+  }
+
+}
+
+function getMilliseconds() {
+  return new Date().getTime();
+}
+
+
+function Man(board, x, y, height, width) {
+  this.x = x;
+  this.y = y;
+  this.board = board;
+  this.lineAbove = false;
+  this.lineBelow = false;
+  this.height = height;
+  this.width = width;
+  this.vForce = null;
+  this.xChange = 0;
+  this.lastXChange = 1;
+  this.step = 1;
+  this.lastBulletTime = null;
+
+  this.draw = function() {
+    //body
+    this.board.context.fillStyle = "blue";
+    this.board.context.fillRect(this.x, this.y, this.width, this.height)
+    //gun
+    this.board.context.fillStyle = "rgb(0, 10, 100)";
+    this.board.context.fillRect(this.x + this.gunDirection(), this.y + this.width / 2, this.width, 4)
+    //handle
+    this.board.context.fillRect(this.x + this.handleDirection(), this.y + (this.height / 2 * 1.25), 2, 2)
+  }
+
+  this.handleDirection = function() {
+    if (this.lastXChange === 1) {
+      return (this.width)
+    } else {
+      return (-2)
+    }
+  }
+
+  this.gunDirection = function() {
+    if (this.lastXChange === 1) {
+      return (this.width)
+    } else {
+      return (-5)
+    }
+  }
+
+  this.bulletDirection = function() {
+    if (this.lastXChange === 1) {
+      return (this.width)
+    } else {
+      return (-3)
+    }
+  }
+
+  this.shoot = function() {
+    if (this.lastBulletTime == null || this.lastBulletTime < (getMilliseconds() - 100)) {
+      var getXDirection = this.bulletDirection()
+      var bullet = new Bullet(board, this.x + getXDirection * 2.5, this.y + this.width / 2, this.lastXChange)
+      this.board.add(bullet);
+      this.lastBulletTime = getMilliseconds();
+    }
   }
 
   this.turn = function() {
@@ -127,6 +150,109 @@ function Man(board, x, y, height, width) {
 }
 Man.prototype = new Thing()
 
+function Monster(board, man, x, y, height, width) {
+  this.x = x;
+  this.y = y;
+  this.board = board;
+  this.man = man;
+  this.lineAbove = false;
+  this.lineBelow = false;
+  this.height = height;
+  this.width = width;
+  this.vForce = null;
+  this.xChange = 0;
+  this.lastXChange = 1;
+  this.step = 1;
+  this.lastBulletTime = null;
+
+  this.draw = function() {
+    //body
+    this.board.context.fillStyle = "red";
+    this.board.context.fillRect(this.x, this.y + 5, this.width, this.height - 5)
+    //head
+    this.board.context.fillRect(this.x, this.y, this.width, 3)
+    //neck
+    this.board.context.fillRect(this.x + this.neckDirection(), this.y + 3, 2, 2)
+  }
+
+  this.neckDirection = function() {
+    if (this.lastXChange === 1) {
+      return (this.width - 2)
+    } else {
+      return (0)
+    }
+  }
+
+  this.rightOfMan = function() {
+    if (this.x >= this.man.x  + this.man.width + 1) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  this.leftOfMan = function() {
+    if (this.x + this.width < this.man.x - 1) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  this.turn = function() {
+    if (this.leftOfMan()) {
+      this.xChange = 1;
+      this.lastXChange = -1;
+    }
+    if (this.rightOfMan()) {
+      this.xChange = -1;
+      this.lastXChange = 1;
+    }
+
+    if (this.man.y + 5 < this.y) {
+      if (this.leftOfMan() || this.rightOfMan()) {
+        if (this.vForce == null) {
+          this.vForce = 15;
+        }
+      }
+    }
+    if (this.vForce > 0 && this.canMoveUp()) {
+      // move to the positon unless we hit something first
+      var pointsToMove = Math.round(this.vForce * .3);
+      for (var i = 0; i < pointsToMove; i += 1) {
+        if (this.canMoveUp()) {
+          this.y -= 1;
+        } else {
+          this.vForce = null;
+        }
+      }
+      this.vForce -= 1;
+    } else if (this.falling()) {
+      // if we are falling
+      if (this.vForce === null);
+        this.vForce = 0;
+      this.vForce += 1;
+      var pointsToMove = Math.round(this.vForce * .7);
+      for (var i = 0; i < pointsToMove; i += 0.25) {
+        if (this.falling()) {
+          this.y += 1;
+        } else {
+          this.vForce = null;
+        }
+      }
+    } else {
+      this.vForce = null;
+    }
+    if ((this.xChange < 0 && !this.againstLeftLine()) ||
+       (this.xChange > 0 && !this.againstRightLine())) {
+       this.x += this.xChange * 0.75;
+    }
+    this.xChange = 0;
+  }
+}
+
+Monster.prototype = new Thing()
+
 function Line(board, x, y, width, height) {
   this.board = board
   this.x = x;
@@ -153,7 +279,7 @@ function Bullet(board, x, y, xChange) {
   this.step = 2;
 
   this.draw = function() {
-    this.board.context.fillStyle = "gold";
+    this.board.context.fillStyle = "white";
     this.board.context.fillRect(this.x, this.y, this.width, this.height)
   }
 
@@ -182,6 +308,7 @@ function Board(width, height, pixelWidth, context) {
   this.context.canvas.style.height = '' + (height * pixelWidth) + 'px';
   this.keyMap = [];
   this.man = null;
+  this.monster = null;
   this.lines = [];
 
   this.add = function(thing) {
@@ -197,6 +324,10 @@ function Board(width, height, pixelWidth, context) {
 
   this.addMan = function(man) {
     this.man = man;
+  }
+
+  this.addMonster = function(monster) {
+    this.monster = monster;
   }
 
   this.addLines = function(line) {
@@ -269,9 +400,13 @@ var start = function() {
   var right = new Line(board, board.width - 1, 0, 1, board.height)
 
   var man = new Man(board, board.width / 2 - 10, board.height - 2 - 10, 10, 5)
+  var monster = new Monster(board, man, board.width / 2 - 30, board.height - 2 - 10, 10, 5)
 
   board.add(man);
   board.addMan(man);
+
+  //board.add(monster);
+  board.addMonster(monster);
 
   board.addLines(line);
   board.addLines(line2);
