@@ -18,7 +18,7 @@ function Thing(board, x, y) {
   }
 
   this.onGround = function() {
-    return (this.board.isBlocked(this.x, this.y + this.height + 1) || (this.board.isBlocked(this.x + this.width, this.y + this.height + 1)))
+    return (this.board.isBlocked(this.x + 1, this.y + this.height + 1) || (this.board.isBlocked(this.x + this.width - 1, this.y + this.height + 1)))
   }
 
   this.againstLeftLine = function() {
@@ -31,6 +31,10 @@ function Thing(board, x, y) {
     return (this.board.isBlocked(this.x + this.width + 1, this.y) ||
       this.board.isBlocked(this.x + this.width + 1, this.y + this.height) ||
       this.board.isBlocked(this.x + this.width + 1, this.y + this.height / 2));
+  }
+
+  this.isBullet = function() {
+    return false;
   }
 
 }
@@ -51,7 +55,7 @@ function Man(board, x, y, height, width) {
   this.vForce = null;
   this.xChange = 0;
   this.lastXChange = 1;
-  this.step = 1;
+  this.step = 2;
   this.lastBulletTime = null;
 
   this.draw = function() {
@@ -59,10 +63,10 @@ function Man(board, x, y, height, width) {
     this.board.context.fillStyle = "blue";
     this.board.context.fillRect(this.x, this.y, this.width, this.height)
     //gun
-    this.board.context.fillStyle = "rgb(0, 10, 100)";
-    this.board.context.fillRect(this.x + this.gunDirection(), this.y + this.width / 2, this.width, 4)
-    //handle
-    this.board.context.fillRect(this.x + this.handleDirection(), this.y + (this.height / 2 * 1.25), 2, 2)
+    // this.board.context.fillStyle = "rgb(0, 10, 100)";
+    // this.board.context.fillRect(this.x + this.gunDirection(), this.y + this.width / 2, this.width, 4)
+    // //handle
+    // this.board.context.fillRect(this.x + this.handleDirection(), this.y + (this.height / 2 * 1.25), 2, 2)
   }
 
   this.handleDirection = function() {
@@ -90,7 +94,7 @@ function Man(board, x, y, height, width) {
   }
 
   this.shoot = function() {
-    if (this.lastBulletTime == null || this.lastBulletTime < (getMilliseconds() - 100)) {
+    if (this.lastBulletTime == null || this.lastBulletTime < (getMilliseconds() - 150)) {
       var getXDirection = this.bulletDirection()
       var bullet = new Bullet(board, this.x + getXDirection * 2.5, this.y + this.width / 2, this.lastXChange)
       this.board.add(bullet);
@@ -163,7 +167,8 @@ function Monster(board, man, x, y, height, width) {
   this.xChange = 0;
   this.lastXChange = 1;
   this.step = 1;
-  this.lastBulletTime = null;
+  this.health = 20;
+  document.getElementById("monsterHealth").innerHTML = "Monster Health: " + this.health;
 
   this.draw = function() {
     //body
@@ -184,7 +189,7 @@ function Monster(board, man, x, y, height, width) {
   }
 
   this.rightOfMan = function() {
-    if (this.x >= this.man.x  + this.man.width + 1) {
+    if (this.x >= this.man.x + this.man.width + 1) {
       return true;
     } else {
       return false;
@@ -209,10 +214,10 @@ function Monster(board, man, x, y, height, width) {
       this.lastXChange = 1;
     }
 
-    if (this.man.y + 5 < this.y) {
+    if (this.man.y + 30 <= this.y) {
       if (this.leftOfMan() || this.rightOfMan()) {
         if (this.vForce == null) {
-          this.vForce = 15;
+          this.vForce = 20;
         }
       }
     }
@@ -246,6 +251,14 @@ function Monster(board, man, x, y, height, width) {
     if ((this.xChange < 0 && !this.againstLeftLine()) ||
        (this.xChange > 0 && !this.againstRightLine())) {
        this.x += this.xChange * 0.75;
+    }
+    if (this.board.hitByBullet(this)) {
+      this.health -= 1;
+      document.getElementById("monsterHealth").innerHTML = "Monster Health: " + this.health;
+      if (this.health > 0) {
+      } else {
+        board.remove(this)
+      }
     }
     this.xChange = 0;
   }
@@ -292,6 +305,11 @@ function Bullet(board, x, y, xChange) {
       }
     }
   }
+
+  this.isBullet = function() {
+    return true;
+  }
+
 }
 
 Bullet.prototype = new Thing()
@@ -337,7 +355,7 @@ function Board(width, height, pixelWidth, context) {
 
   this.drawCells = function() {
     this.clearBoard()
-    for (i = 0; i< this.things.length; i++) {
+    for (var i = 0; i< this.things.length; i++) {
       this.things[i].draw()
     }
   }
@@ -350,7 +368,21 @@ function Board(width, height, pixelWidth, context) {
     for (var i = 0; i < this.lines.length; i++) {
       if ((x >= this.lines[i].x && x <= (this.lines[i].x + this.lines[i].width)) &&
         (y >= this.lines[i].y && y <= (this.lines[i].y + this.lines[i].height))) {
-        return true
+        return true;
+      }
+    }
+    return false;
+  }
+
+  this.hitByBullet = function(thing) {
+    for (var i = 0; i < this.things.length; i++) {
+      if (this.things[i].isBullet()) {
+        var bullet = this.things[i];
+        if ((bullet.x >= thing.x && bullet.x <= thing.x + thing.width) &&
+          (bullet.y >= thing.y && bullet.y <= thing.y + thing.height)) {
+          this.remove(bullet)
+          return true;
+        }
       }
     }
     return false;
@@ -386,14 +418,17 @@ var start = function() {
   var canvas = document.getElementById("myCanvas");
   var context = canvas.getContext("2d");
 
-  board = new Board(200, 200, 1, context);
+  board = new Board(1000, 500, 1, context);
 
   var line = new Line(board, board.width / 2 - 15, board.height - 20, 25, 5)
-  var line2 = new Line(board, board.width / 2 - 5, board.height - 50, 25, 5)
-  var line3 = new Line(board, board.width / 2 + 5, board.height - 80, 25, 5)
-  var line4 = new Line(board, board.width / 2 + 15, board.height - 110, 25, 5)
-  var line5 = new Line(board, board.width / 2 + 25, board.height - 140, 25, 5)
-  var line6 = new Line(board, board.width / 2 + 35, board.height - 170, 25, 5)
+  var line2 = new Line(board, board.width / 2, board.height - 50, 25, 5)
+  var line3 = new Line(board, board.width / 2 + 15, board.height - 80, 25, 5)
+  var line4 = new Line(board, board.width / 2 + 30, board.height - 110, 25, 5)
+  var line5 = new Line(board, board.width / 2 + 45, board.height - 140, 25, 5)
+  var line6 = new Line(board, board.width / 2 + 60, board.height - 170, 25, 5)
+  var block = new Line(board, 0, board.height - 120, 50, 120)
+  var block2 = new Line(board, 0, board.height - 80, 100, 80)
+  var block3 = new Line(board, 0, board.height - 40, 150, 40)
   var top = new Line(board, 0, 0, board.width, 1)
   var bottom = new Line(board, 0, board.height - 1, board.width, 1)
   var left = new Line(board, 0, 0, 1, board.height)
@@ -405,7 +440,7 @@ var start = function() {
   board.add(man);
   board.addMan(man);
 
-  //board.add(monster);
+  board.add(monster);
   board.addMonster(monster);
 
   board.addLines(line);
@@ -414,6 +449,10 @@ var start = function() {
   board.addLines(line4);
   board.addLines(line5);
   board.addLines(line6);
+
+  board.addLines(block);
+  board.addLines(block2);
+  board.addLines(block3);
 
   board.addLines(top);
   board.addLines(bottom);
