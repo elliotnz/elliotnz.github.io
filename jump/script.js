@@ -6,15 +6,14 @@ function Thing(board, x, y) {
   this.turn = function() {}
 
   this.canMoveUp = function() {
-    return (!this.board.isBlocked(this.x, this.y - 1)
-     && !this.board.isBlocked(this.x + this.width, this.y + this.height)
-     && !this.board.isBlocked(this.x, this.y + this.height / 2)
-     && !this.board.isBlocked(this.x + this.width, this.y + this.height / 2))
+    return (!this.board.isBlocked(this.x + 1, this.y - 1)
+     && !this.board.isBlocked(this.x + this.width - 1, this.y + this.height)
+     && !this.board.isBlocked(this.x + 1, this.y + this.height / 2)
+     && !this.board.isBlocked(this.x + this.width - 1, this.y + this.height / 2))
   }
 
   this.falling = function() {
     return !this.onGround()
-    //return (!this.board.isBlocked(this.x, this.y + this.height + 1) && (!this.board.isBlocked(this.x + this.width + 1, this.y + this.height + 1)))
   }
 
   this.onGround = function() {
@@ -33,11 +32,15 @@ function Thing(board, x, y) {
       this.board.isBlocked(this.x + this.width + 1, this.y + this.height / 2));
   }
 
-  this.isBullet = function() {
-    return false;
+  this.within = function(thing) {
+    if ((this.x >= thing.x && this.x <= thing.x + thing.width) &&
+      (this.y >= thing.y && this.y <= thing.y + thing.height)) {
+      return true;
+    } else {
+      return false;
+    }
   }
-
-}
+} // end of Thing
 
 function getMilliseconds() {
   return new Date().getTime();
@@ -63,10 +66,10 @@ function Man(board, x, y, height, width) {
     this.board.context.fillStyle = "blue";
     this.board.context.fillRect(this.x, this.y, this.width, this.height)
     //gun
-    // this.board.context.fillStyle = "rgb(0, 10, 100)";
-    // this.board.context.fillRect(this.x + this.gunDirection(), this.y + this.width / 2, this.width, 4)
-    // //handle
-    // this.board.context.fillRect(this.x + this.handleDirection(), this.y + (this.height / 2 * 1.25), 2, 2)
+    this.board.context.fillStyle = "rgb(0, 10, 100)";
+    this.board.context.fillRect(this.x + this.gunDirection(), this.y + this.width / 2, this.width, 4)
+    //handle
+    this.board.context.fillRect(this.x + this.handleDirection(), this.y + (this.height / 2 * 1.25), 2, 2)
   }
 
   this.handleDirection = function() {
@@ -151,6 +154,9 @@ function Man(board, x, y, height, width) {
      this.xChange = 1;
      this.lastXChange = 1;
   }
+  this.hit = function() {
+    return false;
+  }
 }
 Man.prototype = new Thing()
 
@@ -221,6 +227,15 @@ function Monster(board, man, x, y, height, width) {
         }
       }
     }
+    if (this.x + this.width < this.man.x - 100 || this.x > this.man.x + 100) {
+      document.getElementById("monsterHealth").innerHTML = null;
+      document.getElementById('monsterHealth').style.WebkitAnimation = 'healthFade 1s';
+      document.getElementById("monsterHealth").style.width = "0";
+    } else {
+      document.getElementById('monsterHealth').style.WebkitAnimation = 'healthAppear 1s';
+      document.getElementById("monsterHealth").style.width = "200";
+      document.getElementById("monsterHealth").innerHTML = "Monster Health: " + this.health;
+    }
     if (this.vForce > 0 && this.canMoveUp()) {
       // move to the positon unless we hit something first
       var pointsToMove = Math.round(this.vForce * .3);
@@ -252,16 +267,21 @@ function Monster(board, man, x, y, height, width) {
        (this.xChange > 0 && !this.againstRightLine())) {
        this.x += this.xChange * 0.75;
     }
-    if (this.board.hitByBullet(this)) {
-      this.health -= 1;
-      document.getElementById("monsterHealth").innerHTML = "Monster Health: " + this.health;
-      if (this.health > 0) {
-      } else {
-        board.remove(this)
-      }
-    }
     this.xChange = 0;
   }
+
+  this.hit = function() {
+    this.health -= 1;
+    if (this.health > 0) {
+    } else {
+      board.remove(this)
+      document.getElementById('monsterHealth').style.WebkitAnimation = 'healthFade 1s';
+      document.getElementById("monsterHealth").style.width = "0";
+      document.getElementById("monsterHealth").innerHTML = null;
+    }
+    return true;
+  }
+
 }
 
 Monster.prototype = new Thing()
@@ -304,10 +324,19 @@ function Bullet(board, x, y, xChange) {
         return;
       }
     }
+    for (var i = 0; i < this.board.things.length; i++) {
+      if (this !== this.board.things[i] && this.within(this.board.things[i])) {
+        if (this.board.things[i].hit()) {
+          this.board.remove(this)
+          return;
+        }
+      }
+    }
+
   }
 
-  this.isBullet = function() {
-    return true;
+  this.hit = function() {
+    return false;
   }
 
 }
@@ -378,8 +407,7 @@ function Board(width, height, pixelWidth, context) {
     for (var i = 0; i < this.things.length; i++) {
       if (this.things[i].isBullet()) {
         var bullet = this.things[i];
-        if ((bullet.x >= thing.x && bullet.x <= thing.x + thing.width) &&
-          (bullet.y >= thing.y && bullet.y <= thing.y + thing.height)) {
+        if (bullet.within(thing)) {
           this.remove(bullet)
           return true;
         }
@@ -436,6 +464,9 @@ var start = function() {
 
   var man = new Man(board, board.width / 2 - 10, board.height - 2 - 10, 10, 5)
   var monster = new Monster(board, man, board.width / 2 - 30, board.height - 2 - 10, 10, 5)
+
+  document.getElementById("monsterHealth").style.top = "10px";
+  document.getElementById("monsterHealth").style.left = board.width - 230;
 
   board.add(man);
   board.addMan(man);
