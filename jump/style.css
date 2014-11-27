@@ -25,13 +25,14 @@
     100% {width: 0;}
 }
 #upgradesBox {
-  border-radius: 5%;
+  /*border-radius: 5%;*/
   top: 10px;
   left: 10px;
   float: left;
-	width: 150px;
-	height: 100px;
   position: absolute;
-	-webkit-transform: skew(-20deg);
-  background-color: rgb(0, 25, 50);
+  border-top: 100px solid rgb(0, 25, 50);
+	border-right: 50px solid transparent;
+	height: 0;
+	width: 150px;
+  /*background-color: rgb(0, 25, 50);*/
 }

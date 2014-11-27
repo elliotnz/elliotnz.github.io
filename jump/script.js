@@ -17,7 +17,7 @@ function Thing(board, x, y) {
   }
 
   this.onGround = function() {
-    return (this.board.isBlocked(this.x + 1, this.y + this.height + 1) || (this.board.isBlocked(this.x + this.width - 1, this.y + this.height + 1)))
+    return (this.board.isBlocked(this.x - 1, this.y + this.height + 1) || (this.board.isBlocked(this.x + this.width + 1, this.y + this.height + 1)))
   }
 
   this.againstLeftLine = function() {
@@ -90,16 +90,15 @@ function Man(board, x, y, height, width) {
 
   this.bulletDirection = function() {
     if (this.lastXChange === 1) {
-      return (this.width)
+      return (this.width + 1)
     } else {
-      return (-3)
+      return (-1)
     }
   }
 
   this.shoot = function() {
     if (this.lastBulletTime == null || this.lastBulletTime < (getMilliseconds() - 150)) {
-      var getXDirection = this.bulletDirection()
-      var bullet = new Bullet(board, this.x + getXDirection * 2.5, this.y + this.width / 2, this.lastXChange)
+      var bullet = new Bullet(board, this.x + this. bulletDirection(), this.y + this.width / 2, this.lastXChange)
       this.board.add(bullet);
       this.lastBulletTime = getMilliseconds();
     }
@@ -173,7 +172,7 @@ function Monster(board, man, x, y, height, width) {
   this.xChange = 0;
   this.lastXChange = 1;
   this.step = 1;
-  this.health = 20;
+  this.health = 12;
   document.getElementById("monsterHealth").innerHTML = "Monster Health: " + this.health;
 
   this.draw = function() {
@@ -221,11 +220,11 @@ function Monster(board, man, x, y, height, width) {
     }
 
     if (this.man.y + 30 <= this.y) {
-      if (this.leftOfMan() || this.rightOfMan()) {
+      //if (this.leftOfMan() || this.rightOfMan()) {
         if (this.vForce == null) {
           this.vForce = 20;
         }
-      }
+      //}
     }
     if (this.x + this.width < this.man.x - 100 || this.x > this.man.x + 100) {
       document.getElementById("monsterHealth").innerHTML = null;
@@ -272,12 +271,17 @@ function Monster(board, man, x, y, height, width) {
 
   this.hit = function() {
     this.health -= 1;
-    if (this.health > 0) {
-    } else {
+    if (this.health <= 0) {
       board.remove(this)
       document.getElementById('monsterHealth').style.WebkitAnimation = 'healthFade 1s';
       document.getElementById("monsterHealth").style.width = "0";
       document.getElementById("monsterHealth").innerHTML = null;
+      board.remove(this)
+    }
+    if (this.board.monsters.length === 0) {
+      this.board.wave += 1;
+      document.getElementById("waveNumber").innerHTML = "Wave " + this.board.wave;
+      this.board.startWave()
     }
     return true;
   }
@@ -318,7 +322,7 @@ function Bullet(board, x, y, xChange) {
 
   this.turn = function() {
     for (var i = 0; i < this.step; i++) {
-      this.x += this.xChange;
+      this.x += this.xChange * 1.2;
       if (this.board.isBlocked(this.x, this.y)) {
         this.board.remove(this);
         return;
@@ -355,8 +359,9 @@ function Board(width, height, pixelWidth, context) {
   this.context.canvas.style.height = '' + (height * pixelWidth) + 'px';
   this.keyMap = [];
   this.man = null;
-  this.monster = null;
   this.lines = [];
+  this.wave = 1;
+  this.monsters = []
 
   this.add = function(thing) {
     this.things.push(thing);
@@ -367,14 +372,25 @@ function Board(width, height, pixelWidth, context) {
     if (index > -1) {
       this.things.splice(index, 1);
     }
+    var index2 = this.monsters.indexOf(thing)
+    if (index2 > -1) {
+      this.monsters.splice(index2, 1);
+    }
   }
 
   this.addMan = function(man) {
     this.man = man;
   }
 
-  this.addMonster = function(monster) {
-    this.monster = monster;
+  this.startWave = function() {
+    var xPosition = 0;
+    for (var i = 0; i < this.wave; i++) {
+      var monster = new Monster(this, this.man, 5 + xPosition, this.height - 120 - 10 - 1, 10, 5)
+      xPosition += 7;
+      this.things.push(monster)
+      this.monsters.push(monster)
+      this.add(monster)
+    }
   }
 
   this.addLines = function(line) {
@@ -463,16 +479,16 @@ var start = function() {
   var right = new Line(board, board.width - 1, 0, 1, board.height)
 
   var man = new Man(board, board.width / 2 - 10, board.height - 2 - 10, 10, 5)
-  var monster = new Monster(board, man, board.width / 2 - 30, board.height - 2 - 10, 10, 5)
 
   document.getElementById("monsterHealth").style.top = "10px";
   document.getElementById("monsterHealth").style.left = board.width - 230;
 
+  document.getElementById("waveNumber").innerHTML = "Wave 1";
+
   board.add(man);
   board.addMan(man);
 
-  board.add(monster);
-  board.addMonster(monster);
+  board.startWave()
 
   board.addLines(line);
   board.addLines(line2);
