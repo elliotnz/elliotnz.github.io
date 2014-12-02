@@ -48,15 +48,15 @@ function Circle(x, y, radius, colour, board) {
 
   this.turn = function() {
     if (this.directionX !== 0 || this.directionY !== 0) {
-      this.power *= 0.8;
+      this.power *= 0.95;
     }
     if (this.directionX !== 0) {
-      this.x += (this.directionX / 10.0)
+      this.x += (this.directionX / 2 * this.power)
     }
     if (this.directionY !== 0) {
-      this.y += (this.directionY / 10.0)
+      this.y += (this.directionY / 2 * this.power)
     }
-    if (this.power < 0.01) {
+    if (this.power < 0.1) {
       this.directionX = 0;
       this.directionY = 0;
     }
@@ -75,26 +75,6 @@ function Circle(x, y, radius, colour, board) {
     }
   }
 
-  // this.canMoveTo = function() {
-  //   for (var i = 0; i < this.board.circles.length; i++) {
-  //     var obj = this.board.circles[i];
-  //     var cx = Math.abs(obj.x - x)
-  //     var cy = Math.abs(obj.y - y)
-  //     var zs = Math.pow(cx, 2) + Math.pow(cy, 2)
-  //     var z = Math.sqrt(zs)
-  //     if (z + 1 <= obj.radius) {
-  //       return false;
-  //     } else {
-  //       return true;
-  //     }
-  //     if ((x !== obj.x) && (y !== obj.y)) {
-  //       return true;
-  //     } else {
-  //       return false;
-  //     }
-  //   }
-  // }
-
   this.moveTo = function(x, y) {
     //father:
 
@@ -107,8 +87,9 @@ function Circle(x, y, radius, colour, board) {
     var cy = y - this.y;
     this.x += cx * .5
     this.y += cy * .5
-    //this.power = Math.abs(x - this.x)
-    this.power = 0;
+    if ((this.x === x) && (this.y === y)) {
+      this.power = 0;
+    }
 
     //son:
 
@@ -124,7 +105,7 @@ function Circle(x, y, radius, colour, board) {
 
   this.drop = function() {
     this.selected = false;
-    this.power = 100; // todo - this should be higher if mouse moving faster
+    this.power = 2; // to do - this should be higher if mouse moving faster
     this.directionX = this.lastPositions[this.lastPositions.length - 1].x - this.x;
     this.directionY = this.lastPositions[this.lastPositions.length - 1].y - this.y;
 
