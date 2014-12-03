@@ -37,6 +37,22 @@ function Circle(x, y, radius, colour, board) {
   this.lastPositions = [];
   this.directionX = 0;
   this.directionY = 0;
+  this.direction = null;
+
+  this.getDirection = function(x1, y1, x2, y2) {
+    var p1 = {
+      x: x1,
+      y: y1
+    };
+    var p2 = {
+      x: x2,
+      y: y2
+    };
+    // angle in degrees
+    // y is p1 - p2 as y = 0 is top of screen
+    var angleDeg = Math.atan2(p2.x - p1.x, p2.y - p1.y) * 180 / Math.PI;
+    return angleDeg
+  }
 
   this.draw = function() {
     this.board.context.beginPath();
@@ -47,20 +63,58 @@ function Circle(x, y, radius, colour, board) {
   }
 
   this.turn = function() {
-    if (this.directionX !== 0 || this.directionY !== 0) {
+    if (this.power > 0) {
       this.power *= 0.95;
     }
-    if (this.directionX !== 0) {
-      this.x += (this.directionX / 2 * this.power)
-    }
-    if (this.directionY !== 0) {
-      this.y += (this.directionY / 2 * this.power)
-    }
-    if (this.power < 0.1) {
-      this.directionX = 0;
-      this.directionY = 0;
-    }
 
+    if (this.power < 0.1) {
+      this.power = 0;
+      this.direction = null;
+    }
+    if (this.power > 0) {
+      var BORDER = this.radius
+      var radians = this.direction * (Math.PI / 180.0); // degrees
+
+      this.x += this.power * Math.sin(radians);
+      this.y += this.power * Math.cos(radians);
+
+      if (this.x < BORDER) {
+        if (this.direction < 270) {
+          this.direction = 90 + (270 - this.direction) % 360;
+        } else {
+          this.direction = (90 - (this.direction - 270)) % 360;
+        }
+        this.x = BORDER;
+      }
+
+      if (this.x > (this.board.width - BORDER)) {
+        if (this.direction < 90) {
+          this.direction = 270 + (90 - this.direction) % 360
+        } else {
+          this.direction = 270 + (90 - this.direction) % 360
+        }
+        this.x = this.board.width - BORDER;
+      }
+
+      if (this.y < BORDER) {
+        if (this.direction < 180) {
+          this.direction = (180 - this.direction) % 360;
+        } else {
+          this.direction = 360 - (this.direction - 180) % 360;
+        }
+        this.y = BORDER;
+      }
+
+      if (this.y > (this.board.height - BORDER)) {
+        if (this.direction < 90) {
+          this.direction = 90 + (90 - this.direction) % 360;
+        } else {
+          this.direction = 180 + (360 - this.direction) % 360
+        }
+        this.y = this.board.height - BORDER;
+      }
+      document.getElementById("direction").innerHTML = "DIRECTION: " + this.direction
+    }
   }
 
   this.isInside = function(x,y) {
@@ -78,8 +132,8 @@ function Circle(x, y, radius, colour, board) {
   this.moveTo = function(x, y) {
     //father:
 
-    this.lastPositions.push({x: x, y: y})
-    if (this.lastPositions.length > 10) {
+    this.lastPositions.push({x: this.x, y: this.y})
+    if (this.lastPositions.length > 20) {
       this.lastPositions.shift(); // remove first element
     }
 
@@ -105,15 +159,19 @@ function Circle(x, y, radius, colour, board) {
 
   this.drop = function() {
     this.selected = false;
-    this.power = 2; // to do - this should be higher if mouse moving faster
-    this.directionX = this.lastPositions[this.lastPositions.length - 1].x - this.x;
-    this.directionY = this.lastPositions[this.lastPositions.length - 1].y - this.y;
-
+    if (this.lastPositions.length > 3) {
+      this.power = 10; // to do - this should be higher if mouse moving faster
+      var lastX = this.lastPositions[this.lastPositions.length - 1].x
+      var lastY = this.lastPositions[this.lastPositions.length - 1].y
+      this.direction = this.getDirection(lastX, lastY, this.x, this.y)
+    }
+    this.lastPositions = [];
   }
 
   this.setSelected = function(x, y) {
     this.x = x;
     this.y = y;
+    this.lastPositions = [];
     this.selected = true;
   }
 }
@@ -149,7 +207,6 @@ function Board(width, height, canvas) {
     for (var i = 0; i < this.circles.length; i++) {
       var obj = this.circles[i];
       if (obj.isInside(x,y)) {
-        //obj.mouseSelected = true;
         obj.setSelected(x, y);
       }
     }
@@ -159,7 +216,6 @@ function Board(width, height, canvas) {
     for (var i = 0; i < this.circles.length; i++) {
       var obj = this.circles[i];
       if (obj.isSelected()) {
-        //obj.mouseSelected = false;
         obj.drop();
       }
     }
@@ -168,7 +224,6 @@ function Board(width, height, canvas) {
     for (var i = 0; i < this.circles.length; i++) {
       var obj = this.circles[i];
       if (obj.isSelected()) {
-        //obj.mouseSelected = false;
         obj.moveTo(x,y);
       }
     }
@@ -197,7 +252,6 @@ var start = function() {
   board.add(circle2);
   board.add(circle3);
   board.add(new Circle(285, 273, 30, "orange", board))
-
 
   document.onmousedown = function(e) {
     cursor = getCursorPosition();
