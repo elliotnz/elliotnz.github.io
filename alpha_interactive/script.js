@@ -160,9 +160,9 @@ function Circle(x, y, radius, colour, board) {
   this.drop = function() {
     this.selected = false;
     if (this.lastPositions.length > 3) {
-      this.power = 10; // to do - this should be higher if mouse moving faster
       var lastX = this.lastPositions[this.lastPositions.length - 1].x
       var lastY = this.lastPositions[this.lastPositions.length - 1].y
+      this.power = Math.abs(lastX - this.x) + Math.abs(lastY - this.y); // to do - this should be higher if mouse moving faster
       this.direction = this.getDirection(lastX, lastY, this.x, this.y)
     }
     this.lastPositions = [];
