@@ -1,0 +1,13 @@
+a:hover {
+  font-weight: bold;
+  font-size: 17px;
+  text-shadow: 2px 2px 18px grey;
+}
+a {
+  text-decoration: none;
+  color: #23EADB;
+  transition: font-size .5s, text-shadow 1.0s;
+}
+a:visited {
+
+}
