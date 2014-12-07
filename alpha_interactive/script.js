@@ -26,6 +26,75 @@ function getCursorPosition(e) {
   return cursor;
 }
 
+function Position(x, y) {
+  this.x = x;
+  this.y = y;
+
+  this.subtract = function(v) {
+    return new Vector(this.x - v.x, this.y - v.y)
+  }
+
+  this.add = function(v) {
+    return new Vector(this.x + v.x, this.y + v.y)
+  }
+
+}
+
+function Vector(x,y) {
+  this.x = x;
+  this.y = y;
+
+  this.length = function() {
+    return Math.sqrt(x*x + y*y)
+  }
+
+  // dot product
+  this.dot = function(to) {
+    return (this.x * to.x + this.y * to.y);
+  }
+
+  this.subtract = function(v) {
+    return new Vector(this.x - v.x, this.y - v.y)
+  }
+
+  this.add = function(v) {
+    return new Vector(this.x + v.x, this.y + v.y)
+  }
+
+  this.multiply = function(num) {
+    return new Vector(this.x * num, this.y * num)
+  }
+
+  this.normalize = function() {
+    var vlen = this.length();
+    return new Vector(this.x / vlen, this.y / vlen);
+  }
+
+  this.getDirection = function() {
+
+    var p1 = {
+      x: 0,
+      y: 0
+    };
+    var p2 = {
+      x: this.x,
+      y: this.y
+    };
+    // angle in degrees
+    // y is p1 - p2 as y = 0 is top of screen
+    var angleDeg = Math.atan2(p2.x - p1.x, p2.y - p1.y) * 180 / Math.PI;
+    return angleDeg
+  }
+
+
+  // What is the meaning of the value returned by the dot product?
+  // The value is the cosine of the angle between the two input vectors, multiplied
+  // by the lengths of those vectors. So, you can easily calculate the cosine of the
+  // angle by either, making sure that your two vectors are both of length 1, or dividing
+  // the dot product by the lengths.
+  // Cos(theta) = DotProduct(v1,v2) / (length(v1) * length(v2))
+}
+
 function Circle(x, y, radius, colour, board) {
   this.x = x;
   this.y = y;
@@ -35,9 +104,33 @@ function Circle(x, y, radius, colour, board) {
   this.selected = false;
   this.power = 0;
   this.lastPositions = [];
-  this.directionX = 0;
-  this.directionY = 0;
   this.direction = null;
+  this.mass = radius * 3;
+
+
+  this.position = function() {
+    var p = new Position(this.x, this.y);
+    return p;
+  }
+
+  this.vector = function() {
+    var radians = this.direction * (Math.PI / 180.0); // degrees
+
+    var movingX = this.power * Math.sin(radians);
+    var movingY = this.power * Math.cos(radians);
+
+    var v = new Vector(movingX, movingY)
+    return v;
+  }
+
+  this.velocity = function() {
+    return this.vector().multiply(this.power);
+  }
+
+  this.setVelocity = function(newVelocity) {
+    this.direction = newVelocity.getDirection();
+    this.power = newVelocity.length()
+  }
 
   this.getDirection = function(x1, y1, x2, y2) {
     var p1 = {
@@ -113,7 +206,6 @@ function Circle(x, y, radius, colour, board) {
         }
         this.y = this.board.height - BORDER;
       }
-      document.getElementById("direction").innerHTML = "DIRECTION: " + this.direction
     }
   }
 
@@ -136,7 +228,6 @@ function Circle(x, y, radius, colour, board) {
     if (this.lastPositions.length > 20) {
       this.lastPositions.shift(); // remove first element
     }
-
     var cx = x - this.x;
     var cy = y - this.y;
     this.x += cx * .5
@@ -162,7 +253,7 @@ function Circle(x, y, radius, colour, board) {
     if (this.lastPositions.length > 3) {
       var lastX = this.lastPositions[this.lastPositions.length - 1].x
       var lastY = this.lastPositions[this.lastPositions.length - 1].y
-      this.power = Math.abs(lastX - this.x) + Math.abs(lastY - this.y); // to do - this should be higher if mouse moving faster
+      this.power = 0.89 * (Math.abs(lastX - this.x) + Math.abs(lastY - this.y)); // to do - this should be higher if mouse moving faster
       this.direction = this.getDirection(lastX, lastY, this.x, this.y)
     }
     this.lastPositions = [];
@@ -173,6 +264,65 @@ function Circle(x, y, radius, colour, board) {
     this.y = y;
     this.lastPositions = [];
     this.selected = true;
+  }
+
+  this.colliding = function(ball) {
+    if (this === ball)
+      return false;
+
+    xd = this.x - ball.x;
+    yd = this.y - ball.y;
+
+    sumRadius = this.radius + ball.radius;
+    sqrRadius = sumRadius * sumRadius;
+
+    distSqr = (xd * xd) + (yd * yd);
+
+    if (distSqr <= sqrRadius) {
+      return true;
+    }
+    return false;
+  }
+
+  this.bounce = function(ball) {
+    // get the mtd
+
+    //Vector2d delta = (position.subtract(ball.position));
+    var delta = this.position().subtract(ball.position())
+    var d = delta.length();
+    // minimum translation distance to push balls apart after intersecting
+    var mtd = delta.multiply(((this.radius + ball.radius) - d) / d); //Vector2d
+
+
+    // resolve intersection --
+    // inverse mass quantities
+    var im1 = 1.0 / this.mass;
+    var im2 = 1.0 / ball.mass;
+
+    // push-pull them apart based off their mass
+    var newPosition = this.position().add(mtd.multiply(im1 / (im1 + im2)));
+    this.x = newPosition.x;
+    this.y = newPosition.y;
+    var newBallPosition = ball.position().subtract(mtd.multiply(im2 / (im1 + im2)));
+    ball.x = newBallPosition.x;
+    ball.y = newBallPosition.y;
+
+    // impact speed
+    v = (this.velocity().subtract(ball.velocity()));
+    vn = v.dot(mtd.normalize());
+
+    // sphere intersecting but moving away from each other already
+    if (vn > 0.0) return;
+
+    var restitution = 0.8; //This defines how much a ball bounces once it hits the floor or another ball.
+    // collision impulse
+    i = (-(1.0 + restitution) * vn) / (im1 + im2);
+    var impulse = mtd.multiply(i); //Vector2d
+
+    // change in momentum
+    this.setVelocity(this.velocity().add(impulse.multiply(im1)));
+    ball.setVelocity(ball.velocity().subtract(impulse.multiply(im2)));
+
   }
 }
 
@@ -220,6 +370,7 @@ function Board(width, height, canvas) {
       }
     }
   }
+
   this.mouseMoved = function(x,y) {
     for (var i = 0; i < this.circles.length; i++) {
       var obj = this.circles[i];
@@ -231,7 +382,18 @@ function Board(width, height, canvas) {
 
   this.turn = function() {
     for (i = 0; i < this.circles.length; i++) {
-      this.circles[i].turn()
+      this.circles[i].turn();
+    }
+    this.detectCollision();
+  }
+
+  this.detectCollision = function() {
+    for (i = 0; i < this.circles.length; i++) {
+      for (j = 0; j < this.circles.length; j++) {
+        if (this.circles[i].colliding(this.circles[j])) {
+          this.circles[i].bounce(this.circles[j])
+        }
+      }
     }
   }
 }
