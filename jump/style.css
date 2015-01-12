@@ -3,6 +3,10 @@
   z-index: 100;
 }
 
+* {
+  font-family: Verdana;
+}
+
 #monsterHealth {
   float: left;
   position: absolute;

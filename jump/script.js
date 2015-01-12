@@ -17,7 +17,7 @@ function Thing(board, x, y) {
   }
 
   this.onGround = function() {
-    return (this.board.isBlocked(this.x - 1, this.y + this.height + 1) || (this.board.isBlocked(this.x + this.width + 1, this.y + this.height + 1)))
+    return (this.board.isBlocked(this.x + 1, this.y + this.height + 1) || (this.board.isBlocked(this.x + this.width - 1, this.y + this.height + 1)))
   }
 
   this.againstLeftLine = function() {
