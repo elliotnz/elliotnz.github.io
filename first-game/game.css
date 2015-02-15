@@ -15,3 +15,26 @@ a:visited {
 * {
   font-family: Verdana;
 }
+
+button {
+  position: absolute;
+  float: left;
+  margin-top: 5px;
+  margin-left: -85px;
+  float: center;
+  z-index: 10;
+  border-top: 1px solid #697d8a;
+  border-left: 1px solid #697d8a;
+  background: #62a1cc;
+  background: -webkit-gradient(linear, left top, left bottom, from(#ebc026), to(#62a1cc));
+  background: -webkit-linear-gradient(top, #ebc026, #62a1cc);
+  padding: 7px 9px;
+  border-radius: 7px;
+  box-shadow: rgba(0,0,0,1) 0 1px 0;
+  text-shadow: rgba(0,0,0,.4) 0 1px 0;
+  color: #ffffff;
+  font-size: 12px;
+  font-family: 'Lucida Grande', Helvetica, Arial, Sans-Serif;
+  text-decoration: none;
+  vertical-align: middle;
+}
