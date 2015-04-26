@@ -8,7 +8,7 @@ function Thing(board, x, y) {
 
   this.canMoveUp = function() {
     var varCanMoveUp = true
-    for (var i = 0; i <= this.width + 1; i++) {
+    for (var i = 0; i <= this.width; i++) {
       if (this.board.isBlocked(this.x + i, this.y - 1)) {
         varCanMoveUp = false;
       }
@@ -22,7 +22,7 @@ function Thing(board, x, y) {
 
   this.onGround = function() {
     var onGround = false
-    for (var i = 0; i <= this.width + 1; i++) {
+    for (var i = 0; i <= this.width; i++) {
       if (this.board.isBlocked(this.x + i, this.y + this.height + 1)) {
         onGround = true;
       }
@@ -132,7 +132,7 @@ function Man(board, x, y, height, width, colour) {
         }
       }
       this.vForce -= 1;
-    } else if (this.falling()) {
+    } else if (!this.onGround()) {
       // if we are falling
       if (this.vForce === null);
       this.vForce = 0;
