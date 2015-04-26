@@ -43,7 +43,7 @@ function Thing(board, x, y) {
   this.towardsGround = function(y) {
     var onGround = false
     for (var i = 0; i <= this.width; i++) {
-      if (this.board.isBlocked(this.x + i, y)) {
+      if (this.board.isBlocked(this.x + i, y + 1)) {
         onGround = true;
       }
     }
@@ -139,46 +139,35 @@ function Man(board, x, y, height, width, colour) {
   this.xChange = 0;
   this.lastXChange = 1;
   this.step = 4;
+  this.foundSecret = false;
 
   this.draw = function() {
     //body
     this.board.context.fillStyle = this.colour;
     this.board.context.fillRect(this.x, this.y, this.width, this.height)
+    if (this.foundSecret) {
+      this.board.context.font = "25px Verdana";
+      this.board.context.fillStyle = "black";
+      this.board.context.fillText("You found the secret!", 700, 25)
+    }
   }
 
   this.turn = function() {
-    // look above us
-    // if (this.vForce > 0 && this.canMoveUp()) {
-    //   // move to the positon unless we hit something first
-    //   var pointsToMove = Math.round(this.vForce * .4);
-    //   for (var i = 0; i < pointsToMove; i += 1) {
-    //     if (this.canMoveUp()) {
-    //       this.y -= pointsToMove / 20;
-    //     } else {
-    //       this.vForce = null;
-    //     }
-    //   }
-    //   this.vForce -= 1;
-    // } else if (!this.onGround()) {
-    //   // if we are falling
-    //   if (this.vForce === null);
-    //   this.vForce = 0;
-    //   this.vForce += 1;
-    //   var pointsToMove = Math.round(this.vForce * .7);
-    //   for (var i = 0; i < pointsToMove; i += 0.25) {
-    //     if (this.falling()) {
-    //       this.y += pointsToMove;
-    //     } else {
-    //       this.vForce = null;
-    //     }
-    //   }
-    // } else {
-    //   this.vForce = null;
-    // }
+    if (this.x <= 5 && Math.floor(this.y) === 1) {
+      this.x = 525;
+      this.y = 20;
+      for (var i = 0; i < this.board.lines.length; i++) {
+        this.board.lines[i].colour = "black"
+      }
+      this.foundSecret = true
+    }
     if (this.jumps && !this.currentlyJumping) {
       this.upForce = 18;
       this.jumping = true;
       this.currentlyJumping = true;
+    }
+    if (this.onGround() && this.currentlyJumping) {
+      this.currentlyJumping = false;
     }
     if (this.currentlyJumping) {
       this.jumps = false;
@@ -264,15 +253,16 @@ function Man(board, x, y, height, width, colour) {
 
 Man.prototype = new Thing()
 
-function Line(board, x, y, width, height) {
+function Line(board, x, y, width, height, colour) {
   this.board = board
   this.x = x;
   this.y = y;
   this.width = width;
   this.height = height;
+  this.colour = colour
 
   this.draw = function() {
-    this.board.context.fillStyle = "black";
+    this.board.context.fillStyle = this.colour;
     this.board.context.fillRect(this.x, this.y, this.width, this.height)
   }
 }
@@ -372,25 +362,34 @@ function Board(width, height, pixelWidth, context) {
 var start = function() {
   board = getBoard()//new Board(1000, 500, 1, context);
 
-  var line = new Line(board, board.width / 2 - 240, board.height - 20, 25, 5)
-  var line2 = new Line(board, board.width / 2 - 180, board.height - 50, 25, 5)
-  var line3 = new Line(board, board.width / 2 - 110, board.height - 80, 25, 5)
-  var line4 = new Line(board, board.width / 2 - 60, board.height - 110, 25, 5)
-  var line5 = new Line(board, board.width / 2, board.height - 140, 25, 5)
-  var line6 = new Line(board, board.width / 2 + 60, board.height - 170, 25, 5)
-  var line7 = new Line(board, board.width / 2 + 180, board.height - 175, 25, 5)
-  var line8 = new Line(board, board.width / 2 + 280, board.height - 210, 25, 5)
-  var lineblock = new Line(board, board.width / 2 + 380, board.height - 240, 80, 220)
-  var linecave = new Line(board, board.width / 2 + 450, board.height - 50, 10, 50)
+  var line = new Line(board, board.width / 2 - 240, board.height - 20, 25, 5, "black")
+  var line2 = new Line(board, board.width / 2 - 180, board.height - 50, 25, 5, "black")
+  var line3 = new Line(board, board.width / 2 - 110, board.height - 80, 25, 5, "black")
+  var line4 = new Line(board, board.width / 2 - 60, board.height - 110, 25, 5, "black")
+  var line5 = new Line(board, board.width / 2, board.height - 140, 25, 5, "black")
+  var line6 = new Line(board, board.width / 2 + 60, board.height - 170, 25, 5, "black")
+  var line7 = new Line(board, board.width / 2 + 180, board.height - 175, 25, 5, "black")
+  var line8 = new Line(board, board.width / 2 + 280, board.height - 210, 25, 5, "black")
+  var lineblock = new Line(board, board.width / 2 + 380, board.height - 240, 80, 220, "black")
+  var linecave = new Line(board, board.width / 2 + 450, board.height - 50, 10, 50, "black")
 
-  var block = new Line(board, 0, board.height - 120, 50, 120)
-  var block2 = new Line(board, 40, board.height - 80, 50, 80)
-  var block3 = new Line(board, 80, board.height - 40, 50, 40)
+  var block = new Line(board, 0, board.height - 120, 50, 120, "black")
+  var block2 = new Line(board, 40, board.height - 80, 50, 80, "black")
+  var block3 = new Line(board, 80, board.height - 40, 50, 40, "black")
 
-  var top = new Line(board, 0, 0, board.width, 1)
-  var bottom = new Line(board, 0, board.height - 1, board.width, 1)
-  var left = new Line(board, 0, 0, 1, board.height)
-  var right = new Line(board, board.width - 1, 0, 1, board.height)
+  var secret1 = new Line(board, 80, board.height - 170, 25, 5, "silver")
+  var secret2 = new Line(board, 10, board.height - 250, 25, 5, "silver")
+  var secret3 = new Line(board, 120, board.height - 310, 25, 5, "silver")
+  var secret4 = new Line(board, 200, board.height - 360, 25, 5, "silver")
+  var secret5 = new Line(board, 10, board.height - 415, 25, 5, "silver")
+  var secret6 = new Line(board, 450, 50, 200, 10, "silver")
+  var secret7 = new Line(board, 450, 0, 5, 50, "silver")
+  var secret8 = new Line(board, 645, 0, 5, 50, "silver")
+
+  var top = new Line(board, 0, 0, board.width, 1, "black")
+  var bottom = new Line(board, 0, board.height - 1, board.width, 1, "black")
+  var left = new Line(board, 0, 0, 1, board.height, "black")
+  var right = new Line(board, board.width - 1, 0, 1, board.height, "black")
 
   var man = new Man(board, board.width / 2 - 10, board.height - 2 - 10, 16, 9, "blue")
 
@@ -411,6 +410,15 @@ var start = function() {
   board.addLines(block);
   board.addLines(block2);
   board.addLines(block3);
+
+  board.addLines(secret1);
+  board.addLines(secret2);
+  board.addLines(secret3);
+  board.addLines(secret4);
+  board.addLines(secret5);
+  board.addLines(secret6);
+  board.addLines(secret7);
+  board.addLines(secret8);
 
   board.addLines(top);
   board.addLines(bottom);
