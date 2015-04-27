@@ -16,138 +16,6 @@ ul {
 	border-color: black;
 }
 /*#e8cc17*/
-#triangle1 {
-	position: absolute;
-float: left;
-margin-top: 300px;
-margin-left: 340px;
-font-size: 0px; line-height: 0%; width: 0px; height: 0px;
-border-radius: 0%;
-border-top: 30px solid #e8cc17;
-border-bottom: 30px solid black;
-border-right: 30px solid #e8cc17;
-}
-#triangle2 {
-	position: absolute;
-	float: left;
-	margin-top: 270px;
-	margin-left: 310px;
-	font-size: 0px; line-height: 0%; width: 0px;
-	border-radius: 0%;
-	border-bottom: 30px solid #e8cc17;
-	border-top: 30px solid black;
-	border-right: 30px solid #e8cc17;
-}
-#triangle3 {
-	position: absolute;
-float: left;
-margin-top: 270px;
-margin-left: 250px;
-font-size: 0px; line-height: 0%; width: 0px;
-border-radius: 0%;
-border-top: 30px solid #e8cc17;
-border-bottom: 30px solid black;
-border-right: 30px solid #e8cc17;
-}
-#triangle4 {
-	position: absolute;
-float: left;
-margin-top: 240px;
-margin-left: 250px;
-font-size: 0px; line-height: 0%; width: 0px;
-border-radius: 0%;
-border-top: 30px solid #e8cc17;
-border-bottom: 30px solid black;
-border-left: 30px solid #e8cc17;
-}
-#triangle5 {
-	position: absolute;
-float: left;
-margin-top: 270px;
-margin-left: 280px;
-font-size: 0px; line-height: 0%; width: 0px;
-border-radius: 0%;
-border-bottom: 30px solid #e8cc17;
-border-top: 30px solid black;
-border-left: 30px solid #e8cc17;
-}
-#triangle6 {
-position: absolute;
-float: left;
-margin-top: 300px;
-margin-left: 280px;
-font-size: 0px; line-height: 0%; width: 0px;
-border-radius: 0%;
-border-bottom: 30px solid #e8cc17;
-border-top: 30px solid black;
-border-right: 30px solid #e8cc17;
-}
-#triangle7 {
-position: absolute;
-float: left;
-margin-top: 300px;
-margin-left: 310px;
-font-size: 0px; line-height: 0%; width: 0px;
-border-radius: 0%;
-border-bottom: 30px solid #e8cc17;
-border-top: 30px solid black;
-border-right: 30px solid #e8cc17;
-}
-#triangle8 {
-position: absolute;
-float: left;
-margin-top: 270px;
-margin-left: 340px;
-font-size: 0px; line-height: 0%; width: 0px;
-border-radius: 0%;
-border-top: 30px solid #e8cc17;
-border-bottom: 30px solid black;
-border-left: 30px solid #e8cc17;
-}
-#triangle9 {
-position: absolute;
-float: left;
-margin-top: 330px;
-margin-left: 250px;
-font-size: 0px; line-height: 0%; width: 0px;
-border-radius: 0%;
-border-bottom: 30px solid #e8cc17;
-border-top: 30px solid black;
-border-left: 30px solid #e8cc17;
-}
-#triangle10 {
-position: absolute;
-float: left;
-margin-top: 240px;
-margin-left: 340px;
-font-size: 0px; line-height: 0%; width: 0px;
-border-radius: 0%;
-border-top: 30px solid #e8cc17;
-border-bottom: 30px solid black;
-border-right: 30px solid #e8cc17;
-}
-#triangle11 {
-position: absolute;
-float: left;
-margin-top: 330px;
-margin-left: 310px;
-font-size: 0px; line-height: 0%; width: 0px;
-border-radius: 0%;
-border-bottom: 30px solid #e8cc17;
-border-top: 30px solid black;
-border-left: 30px solid #e8cc17;
-}
-#triangle12 {
-position: absolute;
-float: left;
-margin-top: 330px;
-margin-left: 280px;
-font-size: 0px; line-height: 0%; width: 0px;
-border-radius: 0%;
-border-bottom: 30px solid #e8cc17;
-border-top: 30px solid black;
-border-left: 30px solid #e8cc17;
-}
 
 #headerFont {
 		margin-top: 0px;
@@ -164,22 +32,24 @@ border-left: 30px solid #e8cc17;
 	width: 1400px;
 	background-color: black;
 	position: fixed;
-	z-index: 1;
-	margin-top: 0px;
+	/*z-index: 1;*/
+	margin-top: -0px;
 }
 .left {
 	font-family: Verdana, sans-serif;
   margin-top: 80px;
 	height: 350px;
 	width: 170px;
+	position: fixed;
 	background-color: #B9D7D9;
 	float: left;
 }
 .right {
   margin-top: 80px;
-  margin-right: 25px;
+  margin-left: 200px;
 	height: 350px;
-	width: 1214px;
+	width: 1200px;
+	position: fixed;
 	background-color: #e8cc17;
 	float: right;
 }
