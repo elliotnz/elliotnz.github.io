@@ -38,8 +38,8 @@ function Shape(segments, verticies) {
       var point = this.verticies[i];
       // first with pythagorus to get length H
       //  c**2 = a**2 + b**2
-      var a2 = Math.abs(point.x - origin.x) * Math.abs(point.x - origin.x);
-      var b2 = Math.abs(point.y - origin.y) * Math.abs(point.y - origin.y);
+      var a2 = (point.x - origin.x) * (point.x - origin.x);
+      var b2 = (point.y - origin.y) * (point.y - origin.y);
       var hyp = Math.sqrt(a2 + b2); // c or hypotenuse
       var opp = Math.sin(radians) * hyp;
       var adj = opp / Math.tan(radians);
@@ -49,11 +49,11 @@ function Shape(segments, verticies) {
       var newX = point.x + a;
       var newY = point.y + o;
       console.log("Old point (" + point.x + ", " + point.y + ")")
-      point.x = Math.floor(newX);
-      point.y = Math.floor(newY);
+      point.x = newX;
+      point.y = newY;
       console.log("New point (" + point.x + ", " + point.y + ")")
     }
-    this.debug()
+    //this.debug()
   }
 
   this.debug = function() {
@@ -105,7 +105,7 @@ var getBoard = function() {
 
 var start = function() {
   var board = getBoard();
-  var rotateOrigin = new Point(50, 50);
+  var rotateOrigin = new Point(150, 150);
   var mySquare = new Square(100, 100, 100, 100);
 
   board.shapes.push(mySquare);
@@ -113,7 +113,7 @@ var start = function() {
 
   board.draw("black")
 
-  mySquare.rotate(25, rotateOrigin)
+  mySquare.rotate(90, rotateOrigin)
 
   board.draw("red");
 }
