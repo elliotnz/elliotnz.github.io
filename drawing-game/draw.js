@@ -130,7 +130,7 @@ var getBoard = function() {
   var canvas = document.getElementById("myCanvas");
   var context = canvas.getContext("2d");
 
-  return(new Board(screen.availWidth - 30, screen.availHeight - (screen.height - screen.availHeight) - 130, 1, context));
+  return(new Board(screen.availWidth - 30, screen.availHeight - 170, 1, context));
 }
 
 var board = null;
