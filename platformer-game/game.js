@@ -65,9 +65,16 @@ function Thing(board, x, y, physical) {
     for (var i = 1; i <= 4; i++) {
       for (var j = 0; j <= this.height; j++) {
         if (this.board.isBlocked(this.x - i, this.y + j)) {
-          var used = avaliableSteps
-          varRightLine = true;
-          break;
+          if (!this.board.isBlocked(this.x - avaliableSteps, this.y + j)) {
+            avaliableSteps += 1
+          } else {
+            var used = avaliableSteps
+            //this.getClose(used)
+            avaliableSteps = 0
+            varLeftLine = true;
+            break;
+            break;
+          }
         }
       }
     }
@@ -80,13 +87,32 @@ function Thing(board, x, y, physical) {
     for (var i = 1; i <= 4; i++) {
       for (var j = 0; j <= this.height; j++) {
         if (this.board.isBlocked(this.x + this.width + i, this.y + j)) {
-          var used = avaliableSteps
-          varRightLine = true;
-          break;
+          if (!this.board.isBlocked(this.x + this.width + avaliableSteps, this.y + j)) {
+            avaliableSteps += 1
+          } else {
+            var used = avaliableSteps
+            //this.getClose(used)
+            avaliableSteps = 0
+            varRightLine = true;
+            break;
+            break;
+          }
         }
       }
     }
     return (varRightLine);
+  }
+
+  this.getClose = function(steps, direction) {
+    if (steps < 0 && direction === "left") {
+      steps *= -1
+      this.x -= (steps - 1)
+      this.movingX -= (steps - 1)
+    } else if (steps > 0 && direction === "right") {
+      steps *= 1
+      this.x += (steps + this.width - 1)
+      this.movingX += (steps + this.width - 1)
+    }
   }
 
   this.within = function(thing) {
@@ -155,9 +181,14 @@ function Man(board, x, y, height, width, colour) {
         }
       }
       if (canMoveLeft) {
-        for (var i = 0; i < this.board.lines.length; i++) {
-          this.board.lines[i].x += 1
+        if (this.movingX >= -150 && this.movingX <= 3600) {
+          for (var i = 0; i < this.board.lines.length; i++) {
+            this.board.lines[i].x += 1
+          }
+        } else {
+          this.x -= 1
         }
+        this.movingX -= 1
       }
     }
     if (this.againstRightLine && this.board.keyMap["39"]) {
@@ -168,20 +199,14 @@ function Man(board, x, y, height, width, colour) {
         }
       }
       if (canMoveRight) {
-        for (var i = 0; i < this.board.lines.length; i++) {
-          this.board.lines[i].x -= 1
+        if (this.movingX >= -150 && this.movingX <= 3600) {
+          for (var i = 0; i < this.board.lines.length; i++) {
+            this.board.lines[i].x -= 1
+          }
+        } else {
+          this.x += 1
         }
-      }
-    }
-    if (this.onGround()) {
-      var canMoveDown = true
-      for (var i = 0; i <= this.width; i++) {
-        if (this.board.isBlocked(this.x + i, this.y + this.height + 1)) {
-          canMoveDown = false
-        }
-      }
-      if (canMoveDown) {
-        this.y += 1
+        this.movingX += 1
       }
     }
     if (this.jumps && !this.currentlyJumping) {
