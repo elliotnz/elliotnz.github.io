@@ -86,16 +86,6 @@ function Thing(board, x, y) {
     return (varRightLine);
   }
 
-  this.getClose = function(steps, direction) {
-    if (steps < 0 && direction === "left") {
-      steps *= -1
-      this.x -= (steps - 1)
-    } else if (steps > 0 && direction === "right") {
-      steps *= 1
-      this.x += (steps + this.width - 1)
-    }
-  }
-
   this.within = function(thing) {
     if ((this.x - thing.width + 1 <= thing.x && this.x + this.width - 1 >= thing.x) &&
       (this.y - thing.height + 1 <= thing.y && this.y + this.height - 1 >= thing.y)) {
@@ -110,7 +100,7 @@ function getMilliseconds() {
   return new Date().getTime();
 }
 
-function Man(board, x, y, height, width, colour) {
+function Man(board, x, y, height, width, colour, button1, button2, button3, button4) {
   this.x = x;
   this.y = y - height;
   this.board = board;
@@ -118,7 +108,11 @@ function Man(board, x, y, height, width, colour) {
   this.lineBelow = false;
   this.height = height;
   this.width = width;
-  this.colour = colour
+  this.colour = colour;
+  this.button1 = button1;
+  this.button2 = button2;
+  this.button3 = button3;
+  this.button4 = button4;
   this.upForce = 0;
   this.downForce = 0;
   this.jumps = false;
@@ -149,7 +143,8 @@ function Man(board, x, y, height, width, colour) {
     if (man.lastXChange === 1) {
       return (man.width + 1)
     } else {
-      return (-5)
+      var bt = new Bullet(board, 0, 0, man.lastXChange)
+      return (-bt.width)
     }
   }
 
@@ -159,23 +154,30 @@ function Man(board, x, y, height, width, colour) {
     }
   }
 
-  this.bulletNotInLine = function(bullet, x) {
-    if (this.board.isBlocked(bullet.x + x, bullet.y)) {
-      return false;
-    } else {
+  this.bulletNotInLine = function(b, x) {
+    var notInLine = true
+    for (var i = 0; i <= b.height; i++) {
+      if (this.board.isBlocked(b.x + x, b.y + i) || this.board.isBlocked(b.x, b.y + i) || this.board.isBlocked(b.x + x / 2, b.y + i)) {
+        notInLine = false
+        break;
+      }
+    }
+    if (notInLine) {
       return true;
+    } else {
+      return false;
     }
   }
 
   this.testForTagWithBullet = function(b) {
     if (this.board.men[0].colour === "red") {
       var m = this.board.men[1]
-      if (b.x - 4 >= m.x && b.x <= m.x + m.width - 1 && b.y + 3 >= m.y && b.y <= m.y + m.height - 1) {
+      if (b.x + b.width - 1 >= m.x && b.x <= m.x + m.width - 1 && b.y + b.height - 1 >= m.y && b.y <= m.y + m.height - 1) {
         return true
       }
     } else {
       var m = this.board.men[0]
-      if (b.x - 4 >= m.x && b.x <= m.x + m.width - 1 && b.y + 3 >= m.y && b.y <= m.y + m.height - 1) {
+      if (b.x + b.width - 1 >= m.x && b.x <= m.x + m.width - 1 && b.y + b.height - 1 >= m.y && b.y <= m.y + m.height - 1) {
         return true
       }
     }
@@ -186,21 +188,63 @@ function Man(board, x, y, height, width, colour) {
     if (this.lastBulletTime == null || this.lastBulletTime < (getMilliseconds() - 150)) {
       this.bullets -= 1
       var bullet = new Bullet(board, man.x + this.bulletDirection(man), man.y + man.width / 2, man.lastXChange)
+      bullet.x = (man.x + man.width / 2) - bullet.width / 2
       this.board.addBullet(bullet);
       this.lastBulletTime = getMilliseconds();
     }
   }
 
   this.turn = function() {
-    var readyToRemoveBullet = false
+    if (this.againstLeftLine && this.board.keyMap[this.button1]) {
+      var canMoveLeft = true
+      for (var i = 0; i <= this.height; i++) {
+        if (this.board.isBlocked(this.x - 1, this.y + i)) {
+          canMoveLeft = false
+        }
+      }
+      if (canMoveLeft) {
+        this.x -= 1
+      }
+    }
+    if (this.againstRightLine && this.board.keyMap[this.button2]) {
+      var canMoveRight = true
+      for (var i = 0; i <= this.height; i++) {
+        if (this.board.isBlocked(this.x + this.width + 1, this.y + i)) {
+          canMoveRight = false
+        }
+      }
+      if (canMoveRight) {
+        this.x += 1
+      }
+    }
+    if (this.onGround()) {
+      var canMoveDown = true
+      for (var i = 0; i <= this.width; i++) {
+        if (this.board.isBlocked(this.x + i, this.y + this.height + 1)) {
+          canMoveDown = false
+        }
+      }
+      if (canMoveDown) {
+        this.y += 1
+      }
+    }
+    // var readyToRemoveBullet = false
     if (this.board.men[1].colour === "red") {
       this.board.men[0].bullets = 0
     } else {
       this.board.men[1].bullets = 0
     }
     for (var i = 0; i < this.board.bullets.length; i++) {
-      if (this.bulletNotInLine(this.board.bullets[i], this.board.bullets[i].direction * 2)) {
+      var readyToRemoveBullet = false
+      var bulletX = 1
+      if (this.board.bullets[i].direction < 0) {
+        bulletX = -2.5//this.board.bullets[i].direction * 2.5
+      } else {
+        bulletX = this.board.bullets[i].width + 2.5
+      }
+      if (this.bulletNotInLine(this.board.bullets[i], bulletX)) {
         this.board.bullets[i].x += this.board.bullets[i].direction * 2.5
+        this.board.bullets[i].counter = 0
       } else {
         this.board.bullets[i].counter += 1
       }
@@ -215,10 +259,8 @@ function Man(board, x, y, height, width, colour) {
       }
     }
     if (this.bullets > 0) {
-      if (this.board.keyMap["49"] && this.board.men[1].colour === "red") {
-        this.shoot(this.board.men[1])
-      } else if (this.board.keyMap["32"] && this.board.men[0].colour === "red") {
-        this.shoot(this.board.men[0])
+      if (this.board.keyMap[this.button4] && this.colour === "red") {
+        this.shoot(this)
       }
     }
     if (this.board.men[0].within(this.board.men[1])) {
@@ -359,6 +401,8 @@ function Bullet(board, x, y, direction) {
   this.board = board
   this.x = x;
   this.y = y;
+  this.width = 10
+  this.height = 4
   this.counter = 0;
   this.direction = direction;
   this.lastBulletTime = null;
@@ -366,7 +410,7 @@ function Bullet(board, x, y, direction) {
 
   this.draw = function() {
     this.board.context.fillStyle = "white";
-    this.board.context.fillRect(this.x, this.y, 5, 2)
+    this.board.context.fillRect(this.x, this.y, this.width, this.height)
   }
 }
 
@@ -450,22 +494,22 @@ function Board(width, height, pixelWidth, context) {
     for (var i = 0; i < this.things.length; i++) {
       this.things[i].turn()
     }
-    if (this.keyMap['38']) {
+    if (this.keyMap[this.men[0].button3]) {
       this.men[0].jump();
     }
-    if (this.keyMap['37']) {
+    if (this.keyMap[this.men[0].button1]) {
       this.men[0].moveleft();
     }
-    if (this.keyMap['39']) {
+    if (this.keyMap[this.men[0].button2]) {
       this.men[0].moveright();
     }
-    if (this.keyMap['87']) {
+    if (this.keyMap[this.men[1].button3]) {
       this.men[1].jump();
     }
-    if (this.keyMap['65']) {
+    if (this.keyMap[this.men[1].button1]) {
       this.men[1].moveleft();
     }
-    if (this.keyMap['68']) {
+    if (this.keyMap[this.men[1].button2]) {
       this.men[1].moveright();
     }
   }
@@ -480,7 +524,7 @@ var getBoard = function() {
   var canvas = document.getElementById("myCanvas")
   var context = canvas.getContext("2d");
 
-  return(new Board(1000, 500, 1, context));
+  return(new Board(1300, 600, 1, context));
 }
 
 var board = null;
@@ -502,16 +546,77 @@ var start = function() {
   var block2 = new Line(board, 40, board.height - 80, 50, 80)
   var block3 = new Line(board, 80, board.height - 40, 50, 40)
 
+  var l = new Line(board, 200, board.height - 40, 10, 40)
+  var l2 = new Line(board, 700, board.height - 30, 15, 30)
+  var l3 = new Line(board, 1250, board.height - 100, 50, 5)
+  var l4 = new Line(board, 1250, board.height - 200, 50, 5)
+  var l5 = new Line(board, 1250, board.height - 300, 50, 5)
+  var l6 = new Line(board, 1250, board.height - 400, 50, 5)
+  var l7 = new Line(board, 1250, board.height - 500, 50, 5)
+
+  var l8 = new Line(board, 950, board.height - 500, 50, 5)
+  var l9 = new Line(board, 650, board.height - 500, 50, 5)
+  var l10 = new Line(board, 350, board.height - 500, 50, 5)
+  var l11 = new Line(board, 50, board.height - 500, 50, 5)
+
+  var l12 = new Line(board, 90, board.height - 350, 150, 10)
+  var l13 = new Line(board, 90, board.height - 400, 10, 50)
+  var l14 = new Line(board, 230, board.height - 400, 10, 50)
+  var l15 = new Line(board, 90, board.height - 400, 100, 10)
+
+  var l16 = new Line(board, board.width / 2 + 30, board.height - 270, 25, 5)
+  var l17 = new Line(board, board.width / 2 - 60, board.height - 370, 25, 5)
+  var l18 = new Line(board, board.width / 2 - 170, board.height - 470, 25, 5)
+
+  var l19 = new Line(board, board.width / 2 + 400, board.height - 353, 50, 7)
+
+  var l20 = new Line(board, 100, board.height - 200, 40, 5)
+  var l21 = new Line(board, 175, board.height - 250, 40, 5)
+  var l22 = new Line(board, 250, board.height - 300, 40, 5)
+  var l23 = new Line(board, 325, board.height - 350, 40, 5)
+  var l24 = new Line(board, 400, board.height - 400, 40, 5)
+
+  board.addLines(l)
+  board.addLines(l2)
+  board.addLines(l3)
+  board.addLines(l4)
+  board.addLines(l5)
+  board.addLines(l6)
+  board.addLines(l7)
+  board.addLines(l8)
+  board.addLines(l9)
+  board.addLines(l10)
+  board.addLines(l11)
+  board.addLines(l12)
+  board.addLines(l13)
+  board.addLines(l14)
+  board.addLines(l15)
+  board.addLines(l16)
+  board.addLines(l17)
+  board.addLines(l18)
+  board.addLines(l19)
+  board.addLines(l20)
+  board.addLines(l21)
+  board.addLines(l22)
+  board.addLines(l23)
+  board.addLines(l24)
+
   var top = new Line(board, 0, 0, board.width, 1)
   var bottom = new Line(board, 0, board.height - 1, board.width, 1)
   var left = new Line(board, 0, 0, 1, board.height)
   var right = new Line(board, board.width - 1, 0, 1, board.height)
 
   var man1X = Math.floor(Math.random() * (board.width / 2)) + 50
-  var man2X = Math.floor(Math.random() * (board.width / 2)) + 500
+  while (man1X < 130) {
+    man1X = Math.floor(Math.random() * (board.width / 2)) + 50
+  }
+  var man2X = Math.floor(Math.random() * (board.width / 2)) + board.width / 2 - 50
+  while (man2X > board.width / 2 + 380 && man2X < board.width / 2 + 460) {
+    man2X = Math.floor(Math.random() * (board.width / 2)) + board.width / 2 - 50
+  }
 
-  var man1 = new Man(board, man1X, 50, 16, 9, "blue")
-  var man2 = new Man(board, man2X, 50, 16, 9, "red")
+  var man1 = new Man(board, man1X, 500, 16, 9, "blue", "37", "39", "38", "32")
+  var man2 = new Man(board, man2X, 500, 16, 9, "red", "65", "68", "87", "49")
 
   board.add(man1);
   board.addMan(man1);
