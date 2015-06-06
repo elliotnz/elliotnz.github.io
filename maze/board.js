@@ -385,6 +385,13 @@ var start = function() {
   }
   var points = 0;
 
+  window.addEventListener("keydown", function(e) {
+    // space and arrow keys
+    if ([37, 39, 38, 40].indexOf(e.keyCode) > -1) {
+      e.preventDefault();
+    }
+  }, false);
+
   setInterval(function() {
     board.drawCells();
   }, 1000 / 60);

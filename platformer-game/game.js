@@ -1129,6 +1129,13 @@ var start = function() {
   document.onkeydown = board.keyUpDown;
   document.onkeyup = board.keyUpDown;
 
+  window.addEventListener("keydown", function(e) {
+    // space and arrow keys
+    if ([37, 39, 38, 40].indexOf(e.keyCode) > -1) {
+      e.preventDefault();
+    }
+  }, false);
+
   var man = new Man(board, board.width / 2, board.height - 5, 16, 9, "blue")
 
   board.add(man);
