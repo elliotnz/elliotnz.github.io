@@ -123,8 +123,12 @@ function Man(board, x, y, height, width, colour, button1, button2, button3, butt
   this.direction = 0;
   this.xChange = 0;
   this.lastBulletTime = null;
+  this.getBulletTime = null;
   this.lastXChange = 1;
-  this.bullets = 10
+  this.bullets = 10;
+  this.bulletSpeed = 5;
+  this.tagTimer = getMilliseconds()
+  this.score = 0;
   this.step = 4;
 
   this.draw = function() {
@@ -156,10 +160,23 @@ function Man(board, x, y, height, width, colour, button1, button2, button3, butt
 
   this.bulletNotInLine = function(b, x) {
     var notInLine = true
-    for (var i = 0; i <= b.height; i++) {
-      if (this.board.isBlocked(b.x + x, b.y + i) || this.board.isBlocked(b.x, b.y + i) || this.board.isBlocked(b.x + x / 2, b.y + i)) {
-        notInLine = false
-        break;
+    if (x > 0) {
+      for (var i = 0; i <= x; i++) {
+        for (var j = 0; j < b.height; j++) {
+          if (this.board.isBlocked(b.x + i, b.y + j)) {
+            notInLine = false
+            break;
+          }
+        }
+      }
+    } else {
+      for (var i = 0; i >= x; i--) {
+        for (var j = 0; j < b.height; j++) {
+          if (this.board.isBlocked(b.x + i, b.y + j)) {
+            notInLine = false
+            break;
+          }
+        }
       }
     }
     if (notInLine) {
@@ -170,18 +187,28 @@ function Man(board, x, y, height, width, colour, button1, button2, button3, butt
   }
 
   this.testForTagWithBullet = function(b) {
-    if (this.board.men[0].colour === "red") {
-      var m = this.board.men[1]
-      if (b.x + b.width - 1 >= m.x && b.x <= m.x + m.width - 1 && b.y + b.height - 1 >= m.y && b.y <= m.y + m.height - 1) {
-        return true
-      }
-    } else {
-      var m = this.board.men[0]
+    if (this.colour !== "red") {
+      var m = this
       if (b.x + b.width - 1 >= m.x && b.x <= m.x + m.width - 1 && b.y + b.height - 1 >= m.y && b.y <= m.y + m.height - 1) {
         return true
       }
     }
     return false
+  }
+
+  this.bulletCanGetCloser = function(b, x) {
+    var canGetCloser = true
+    for (var i = 0; i < b.height; i++) {
+      if (this.board.isBlocked(b.x + x + b.direction, b.y + i)) {
+        canGetCloser = false;
+        break;
+      }
+    }
+    if (canGetCloser) {
+      return true
+    } else {
+      return false
+    }
   }
 
   this.shoot = function(man) {
@@ -195,98 +222,12 @@ function Man(board, x, y, height, width, colour, button1, button2, button3, butt
   }
 
   this.turn = function() {
-    if (this.againstLeftLine && this.board.keyMap[this.button1]) {
-      var canMoveLeft = true
-      for (var i = 0; i <= this.height; i++) {
-        if (this.board.isBlocked(this.x - 1, this.y + i)) {
-          canMoveLeft = false
-        }
-      }
-      if (canMoveLeft) {
-        this.x -= 1
-      }
+    //score stuff
+    if (this.colour !== "red") {
+      this.score += 1
     }
-    if (this.againstRightLine && this.board.keyMap[this.button2]) {
-      var canMoveRight = true
-      for (var i = 0; i <= this.height; i++) {
-        if (this.board.isBlocked(this.x + this.width + 1, this.y + i)) {
-          canMoveRight = false
-        }
-      }
-      if (canMoveRight) {
-        this.x += 1
-      }
-    }
-    if (this.onGround()) {
-      var canMoveDown = true
-      for (var i = 0; i <= this.width; i++) {
-        if (this.board.isBlocked(this.x + i, this.y + this.height + 1)) {
-          canMoveDown = false
-        }
-      }
-      if (canMoveDown) {
-        this.y += 1
-      }
-    }
-    // var readyToRemoveBullet = false
-    if (this.board.men[1].colour === "red") {
-      this.board.men[0].bullets = 0
-    } else {
-      this.board.men[1].bullets = 0
-    }
-    for (var i = 0; i < this.board.bullets.length; i++) {
-      var readyToRemoveBullet = false
-      var bulletX = 1
-      if (this.board.bullets[i].direction < 0) {
-        bulletX = -2.5//this.board.bullets[i].direction * 2.5
-      } else {
-        bulletX = this.board.bullets[i].width + 2.5
-      }
-      if (this.bulletNotInLine(this.board.bullets[i], bulletX)) {
-        this.board.bullets[i].x += this.board.bullets[i].direction * 2.5
-        this.board.bullets[i].counter = 0
-      } else {
-        this.board.bullets[i].counter += 1
-      }
-      if (this.board.bullets[i].counter > 200) {
-        readyToRemoveBullet = true
-      }
-      if (this.testForTagWithBullet(this.board.bullets[i])) {
-        this.board.toBeIn = true
-      }
-      if (readyToRemoveBullet) {
-        this.board.removeBullet(this.board.bullets[i])
-      }
-    }
-    if (this.bullets > 0) {
-      if (this.board.keyMap[this.button4] && this.colour === "red") {
-        this.shoot(this)
-      }
-    }
-    if (this.board.men[0].within(this.board.men[1])) {
-      this.board.changeTag = true
-    } else {
-      this.board.changeTag = false
-    }
-    if (this.board.changeTag) {
-      this.board.toBeIn = true
-    }
-    if (this.board.toBeIn && !this.board.changeTag) {
-      this.removeAllBullets()
-      if (this.board.men[1].colour === "red") {
-        this.board.men[0].colour = "red"
-        this.board.men[0].bullets = 10
-        this.board.men[1].colour = "purple"
-        this.board.men[1].bullets = 0
-        this.board.toBeIn = false;
-      } else if (this.board.men[0].colour === "red") {
-        this.board.men[0].colour = "blue"
-        this.board.men[0].bullets = 0
-        this.board.men[1].colour = "red"
-        this.board.men[1].bullets = 10
-        this.board.toBeIn = false;
-      }
-    }
+
+    //moving stuff
     if (this.jumps && !this.currentlyJumping) {
       this.upForce = 18;
       this.jumping = true;
@@ -297,6 +238,7 @@ function Man(board, x, y, height, width, colour, button1, button2, button3, butt
     }
     if (this.onGround() && this.currentlyJumping) {
       this.currentlyJumping = false;
+      this.downForce = 1;
     }
     if (this.falling && this.upForce > 0) {
       this.upForce = 0;
@@ -352,17 +294,134 @@ function Man(board, x, y, height, width, colour, button1, button2, button3, butt
         this.falling = false;
         this.currentlyJumping = false;
         this.counter = 0;
-        this.downForce = 0
+        this.downForce = 0;
       }
     }
-
     if ((this.xChange < 0 && !this.againstLeftLine()) ||
     (this.xChange > 0 && !this.againstRightLine())) {
       this.x += this.xChange * this.step;
       this.direction = this.xChange
     }
     this.xChange = 0;
-  }
+    if (this.bullets < 10 && this.colour === "red") {
+      if (this.getBulletTimer === null) {
+        this.getBulletTimer = getMilliseconds()
+      }
+      if (this.getBulletTimer < (getMilliseconds() - 2000)) {
+        this.bullets += 1
+        this.getBulletTimer = getMilliseconds()
+      }
+    } else {
+      this.getBulletTimer = null
+    }
+    if (this.againstLeftLine && this.board.keyMap[this.button1]) {
+      var canMoveLeft = true
+      for (var i = 0; i <= this.height; i++) {
+        if (this.board.isBlocked(this.x - 1, this.y + i)) {
+          canMoveLeft = false
+        }
+      }
+      if (canMoveLeft) {
+        this.x -= 1
+      }
+    }
+    if (this.againstRightLine && this.board.keyMap[this.button2]) {
+      var canMoveRight = true
+      for (var i = 0; i <= this.height; i++) {
+        if (this.board.isBlocked(this.x + this.width + 1, this.y + i)) {
+          canMoveRight = false
+        }
+      }
+      if (canMoveRight) {
+        this.x += 1
+      }
+    }
+    if (this.onGround()) {
+      var canMoveDown = true
+      for (var i = 0; i <= this.width; i++) {
+        if (this.board.isBlocked(this.x + i, this.y + this.height + 1)) {
+          canMoveDown = false
+        }
+      }
+      if (canMoveDown) {
+        this.y += 1
+      }
+    }
+
+    //bullet and tagging stuff
+    if (this.board.men[1].colour === "red") {
+      this.board.men[0].bullets = 0
+    } else {
+      this.board.men[1].bullets = 0
+    }
+    for (var i = 0; i < this.board.bullets.length; i++) {
+      var readyToRemoveBullet = false
+      var bulletX = 1
+      if (this.board.bullets[i].direction < 0) {
+        bulletX = -this.bulletSpeed//this.board.bullets[i].direction * 2.5
+      } else {
+        bulletX = this.board.bullets[i].width + this.bulletSpeed
+      }
+      if (this.bulletNotInLine(this.board.bullets[i], bulletX)) {
+        this.board.bullets[i].x += this.board.bullets[i].direction * this.bulletSpeed
+        this.board.bullets[i].counter = 0
+      } else {
+        if (this.board.bullets[i].direction > 0) {
+          bulletX = this.board.bullets[i].width
+        } else {
+          bulletX = 0
+        }
+        if (!this.bulletCanGetCloser(this.board.bullets[i], bulletX)) {
+          this.board.bullets[i].counter += 1
+        } else {
+          this.board.bullets[i].x += this.board.bullets[i].direction
+        }
+      }
+      if (this.board.bullets[i].counter > 200) {
+        readyToRemoveBullet = true
+      }
+      if (this.testForTagWithBullet(this.board.bullets[i])) {
+        this.board.toBeIn = true
+      }
+      if (readyToRemoveBullet) {
+        this.board.removeBullet(this.board.bullets[i])
+      }
+    }
+    if (this.bullets > 0) {
+      if (this.board.keyMap[this.button4] && this.colour === "red") {
+        this.shoot(this)
+      }
+    }
+    if (this.board.men[0].within(this.board.men[1])) {
+      this.board.changeTag = true
+    } else {
+      this.board.changeTag = false
+    }
+    if (this.board.changeTag) {
+      this.board.toBeIn = true
+    }
+    if (this.board.toBeIn && !this.board.changeTag) {
+      if (this.tagTimer < (getMilliseconds() - 300)) {
+        this.removeAllBullets()
+        if (this.board.men[1].colour === "red") {
+          this.board.men[0].colour = "red"
+          this.board.men[0].bullets = 10
+          this.board.men[1].colour = "purple"
+          this.board.men[1].bullets = 0
+          this.board.toBeIn = false;
+        } else if (this.board.men[0].colour === "red") {
+          this.board.men[0].colour = "blue"
+          this.board.men[0].bullets = 0
+          this.board.men[1].colour = "red"
+          this.board.men[1].bullets = 10
+          this.board.toBeIn = false;
+        }
+        this.tagTimer = getMilliseconds()
+      } else {
+        this.board.toBeIn = false
+      }
+    }
+  }// end of turn
 
   this.jump = function() {
     this.jumps = true;
@@ -416,6 +475,21 @@ function Bullet(board, x, y, direction) {
 
 Bullet.prototype = new Thing()
 
+function Score(board, man, x, y) {
+  this.board = board;
+  this.scoreMan = man;
+  this.x = x;
+  this.y = y;
+
+  this.draw = function() {
+    this.board.context.fillStyle = "black";
+    this.board.context.font = "20px Verdana"
+    this.board.context.fillText("Score of Player " + (this.board.men.indexOf(this.scoreMan) + 1) + ": " + this.scoreMan.score, this.x, this.y)
+  }
+}
+
+Score.prototype = new Thing()
+
 function Board(width, height, pixelWidth, context) {
   this.changeTag = false;
   this.toBeIn = false;
@@ -434,7 +508,8 @@ function Board(width, height, pixelWidth, context) {
   this.elevators = [];
   this.spikes = [];
   this.bullets = [];
-  this.names = [];
+  this.scores = [];
+  this.paused = false;
 
   this.add = function(thing) {
     this.things.push(thing);
@@ -467,6 +542,11 @@ function Board(width, height, pixelWidth, context) {
   this.addBullet = function(bullet) {
     this.bullets.push(bullet);
     this.add(bullet);
+  }
+
+  this.addScore = function(score) {
+    this.scores.push(score)
+    this.add(score)
   }
 
   this.drawCells = function() {
@@ -529,6 +609,18 @@ var getBoard = function() {
 
 var board = null;
 
+var pause = function() {
+  if (board.paused) {
+    board.paused = false
+    document.getElementById("myCanvas").style.backgroundColor = "silver"
+    document.getElementById("pauseSign").style.visibility = "hidden"
+  } else {
+    board.paused = true
+    document.getElementById("myCanvas").style.backgroundColor = "gray"
+    document.getElementById("pauseSign").style.visibility = "visible"
+  }
+}
+
 var start = function() {
   board = getBoard()//new Board(1000, 500, 1, context);
 
@@ -576,6 +668,20 @@ var start = function() {
   var l23 = new Line(board, 325, board.height - 350, 40, 5)
   var l24 = new Line(board, 400, board.height - 400, 40, 5)
 
+  board.addLines(line);
+  board.addLines(line2);
+  board.addLines(line3);
+  board.addLines(line4);
+  board.addLines(line5);
+  board.addLines(line6);
+  board.addLines(line7);
+  board.addLines(line8);
+  board.addLines(lineblock);
+
+  board.addLines(block);
+  board.addLines(block2);
+  board.addLines(block3);
+
   board.addLines(l)
   board.addLines(l2)
   board.addLines(l3)
@@ -606,12 +712,17 @@ var start = function() {
   var left = new Line(board, 0, 0, 1, board.height)
   var right = new Line(board, board.width - 1, 0, 1, board.height)
 
+  board.addLines(top);
+  board.addLines(bottom);
+  board.addLines(left);
+  board.addLines(right);
+
   var man1X = Math.floor(Math.random() * (board.width / 2)) + 50
   while (man1X < 130) {
     man1X = Math.floor(Math.random() * (board.width / 2)) + 50
   }
   var man2X = Math.floor(Math.random() * (board.width / 2)) + board.width / 2 - 50
-  while (man2X > board.width / 2 + 380 && man2X < board.width / 2 + 460) {
+  while (man2X > board.width / 2 + 380 && man2X < board.width / 2 + 480) {
     man2X = Math.floor(Math.random() * (board.width / 2)) + board.width / 2 - 50
   }
 
@@ -624,34 +735,30 @@ var start = function() {
   board.add(man2);
   board.addMan(man2);
 
-  board.addLines(line);
-  board.addLines(line2);
-  board.addLines(line3);
-  board.addLines(line4);
-  board.addLines(line5);
-  board.addLines(line6);
-  board.addLines(line7);
-  board.addLines(line8);
-  board.addLines(lineblock);
+  var score1 = new Score(board, man1, 50, 50)
+  var score2 = new Score(board, man2, 900, 50)
 
-  board.addLines(block);
-  board.addLines(block2);
-  board.addLines(block3);
-
-  board.addLines(top);
-  board.addLines(bottom);
-  board.addLines(left);
-  board.addLines(right);
-
+  board.addScore(score1)
+  board.addScore(score2)
 
   document.onkeydown = board.keyUpDown;
   document.onkeyup = board.keyUpDown;
 
+  window.addEventListener("keydown", function(e) {
+    // space and arrow keys
+    window.scroll(0,0);
+    if ([37, 39, 38, 40, 32].indexOf(e.keyCode) > -1) {
+      e.preventDefault();
+    }
+  }, false);
+
   setInterval(function() {
-    board.drawCells();
+    if (!board.paused)
+      board.drawCells();
   }, 1000 / 60);
 
   setInterval(function() {
-    board.turn()
+    if (!board.paused)
+      board.turn()
   }, 1000 / 60);
 }

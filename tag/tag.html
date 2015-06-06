@@ -5,5 +5,17 @@
   </head>
   <body onload='start()'>
     <canvas id="myCanvas" style="background-color: silver; margin-left: 5px;">Your browser does not support the HTML5 canvas tag.</canvas>
+    <button onclick="pause()" style="border-radius: 1%; border: 2px solid black;
+    background-color: green; position: absolute; left: 1150px; top: 20px;
+    width: 100px; height: 35px; font-family: Verdana; font-size: 20px">
+    Pause</button>
+    <p style="position: absolute; left: 500px; top: 200px; visibility: hidden; font-family: Verdana; font-size: 70px" id="pauseSign"><b>Paused</b></p>
+    <div id="controls" style="font-family: Verdana; line-height: 45%">
+      <p style="font-size: 20px;"><b>Controls:</b></p>
+      <p>W/up arrow: Jump</p>
+      <p>A/left arrow: Left</p>
+      <p>D/right arrow: Right</p>
+      <p>1/Space: Shoot</p>
+    </div>
   </body>
 </html>
