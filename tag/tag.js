@@ -53,7 +53,7 @@ function Thing(board, x, y) {
   this.againstLeftLine = function() {
     var avaliableSteps = 0;
     var varLeftLine = false
-    for (var i = 1; i <= 4; i++) {
+    for (var i = 1; i <= this.step; i++) {
       for (var j = 0; j <= this.height; j++) {
         if (this.board.isBlocked(this.x - i, this.y + j)) {
           if (!this.board.isBlocked(this.x - avaliableSteps, this.y + j)) {
@@ -74,7 +74,7 @@ function Thing(board, x, y) {
   this.againstRightLine = function() {
     var avaliableSteps = 0;
     var varRightLine = false
-    for (var i = 1; i <= 4; i++) {
+    for (var i = 1; i <= this.step; i++) {
       for (var j = 0; j <= this.height; j++) {
         if (this.board.isBlocked(this.x + this.width + i, this.y + j)) {
           var used = avaliableSteps
@@ -129,7 +129,7 @@ function Man(board, x, y, height, width, colour, button1, button2, button3, butt
   this.bulletSpeed = 5;
   this.tagTimer = getMilliseconds()
   this.score = 0;
-  this.step = 4;
+  this.step = 5;
 
   this.draw = function() {
     //body
@@ -264,7 +264,26 @@ function Man(board, x, y, height, width, colour, button1, button2, button3, butt
       if (canMoveUpForceUp && this.canMoveUp() && this.upForce > 0) {
         this.y -= this.upForce
       } else if (!canMoveUpForceUp && this.canMoveUp() && this.upForce > 0) {
-        this.y -= 1
+        var distanceCanMoveUp = 0
+        var canMoveUp = true;
+        var readyToIncrease = true;
+        while (canMoveUp) {
+          readyToIncrease = true
+          for (var i = 0; i <= this.width; i++) {
+            if (this.board.isBlocked(this.x + i, this.y - distanceCanMoveUp - 0.1)) {
+              canMoveUp = false
+              readyToIncrease = false
+              break;
+            }
+          }
+          if (readyToIncrease) {
+            distanceCanMoveUp += 0.1;
+          } else {
+            canMoveUp = false
+            break;
+          }
+        }
+        this.y -= distanceCanMoveUp
       } else {
         this.counter += 2;
       }
@@ -314,38 +333,76 @@ function Man(board, x, y, height, width, colour, button1, button2, button3, butt
     } else {
       this.getBulletTimer = null
     }
-    if (this.againstLeftLine && this.board.keyMap[this.button1]) {
-      var canMoveLeft = true
-      for (var i = 0; i <= this.height; i++) {
-        if (this.board.isBlocked(this.x - 1, this.y + i)) {
+    if (this.againstLeftLine() && this.board.keyMap[this.button1]) {
+      var distanceCanMoveLeft = 0
+      var canMoveLeft = true;
+      var readyToIncrease = true;
+      while (canMoveLeft) {
+        readyToIncrease = true
+        for (var i = 0; i <= this.height; i++) {
+          if (this.board.isBlocked(this.x - distanceCanMoveLeft - 0.1, this.y + i)) {
+            //canMoveLeft = false
+            readyToIncrease = false
+            break;
+            //break;
+          }
+        }
+        if (readyToIncrease) {
+          distanceCanMoveLeft += 0.1;
+        } else {
           canMoveLeft = false
+          break;
         }
       }
-      if (canMoveLeft) {
-        this.x -= 1
-      }
+      this.x -= distanceCanMoveLeft
     }
-    if (this.againstRightLine && this.board.keyMap[this.button2]) {
-      var canMoveRight = true
-      for (var i = 0; i <= this.height; i++) {
-        if (this.board.isBlocked(this.x + this.width + 1, this.y + i)) {
+    if (this.againstRightLine() && this.board.keyMap[this.button2]) {
+      var distanceCanMoveRight = 0
+      var canMoveRight = true;
+      var readyToIncrease = true;
+      while (canMoveRight) {
+        readyToIncrease = true
+        for (var i = 0; i <= this.height; i++) {
+          if (this.board.isBlocked(this.x + this.width + distanceCanMoveRight + 0.1, this.y + i)) {
+            readyToIncrease = false
+            break;
+          }
+        }
+        if (readyToIncrease) {
+          distanceCanMoveRight += 0.1;
+        } else {
           canMoveRight = false
+          break;
         }
       }
-      if (canMoveRight) {
-        this.x += 1
-      }
+      this.x += distanceCanMoveRight
     }
     if (this.onGround()) {
-      var canMoveDown = true
-      for (var i = 0; i <= this.width; i++) {
-        if (this.board.isBlocked(this.x + i, this.y + this.height + 1)) {
+      this.falling = false;
+      this.currentlyJumping = false;
+      this.counter = 0;
+      this.downForce = 0;
+      var distanceCanMoveDown = 0
+      var canMoveDown = true;
+      var readyToIncrease = true;
+      while (canMoveDown) {
+        readyToIncrease = true
+        for (var i = 0; i <= this.width; i++) {
+          if (this.board.isBlocked(this.x + i, this.y + this.height + distanceCanMoveDown + 0.1)) {
+            //canMoveDown = false
+            readyToIncrease = false
+            break;
+            //break;
+          }
+        }
+        if (readyToIncrease) {
+          distanceCanMoveDown += 0.1;
+        } else {
           canMoveDown = false
+          break;
         }
       }
-      if (canMoveDown) {
-        this.y += 1
-      }
+      this.y += distanceCanMoveDown
     }
 
     //bullet and tagging stuff
@@ -722,7 +779,7 @@ var start = function() {
     man1X = Math.floor(Math.random() * (board.width / 2)) + 50
   }
   var man2X = Math.floor(Math.random() * (board.width / 2)) + board.width / 2 - 50
-  while (man2X > board.width / 2 + 380 && man2X < board.width / 2 + 480) {
+  while (man2X > board.width / 2 + 370 && man2X < board.width / 2 + 480) {
     man2X = Math.floor(Math.random() * (board.width / 2)) + board.width / 2 - 50
   }
 

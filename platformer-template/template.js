@@ -161,6 +161,50 @@ function Man(board, x, y, height, width, colour) {
       }
       this.foundSecret = true
     }
+    if (this.againstRightLine() && this.board.keyMap["39"]) {
+      var distanceCanMoveRight = 0
+      var canMoveRight = true;
+      var readyToIncrease = true;
+      while (canMoveRight) {
+        readyToIncrease = true
+        for (var i = 0; i <= this.height; i++) {
+          if (this.board.isBlocked(this.x + this.width + distanceCanMoveRight + 0.1, this.y + i)) {
+            readyToIncrease = false
+            break;
+          }
+        }
+        if (readyToIncrease) {
+          distanceCanMoveRight += 0.1;
+        } else {
+          canMoveRight = false
+          break;
+        }
+      }
+      this.x += distanceCanMoveRight
+    }
+    if (this.againstLeftLine() && this.board.keyMap["37"]) {
+      var distanceCanMoveLeft = 0
+      var canMoveLeft = true;
+      var readyToIncrease = true;
+      while (canMoveLeft) {
+        readyToIncrease = true
+        for (var i = 0; i <= this.height; i++) {
+          if (this.board.isBlocked(this.x - distanceCanMoveLeft - 0.1, this.y + i)) {
+            //canMoveLeft = false
+            readyToIncrease = false
+            break;
+            //break;
+          }
+        }
+        if (readyToIncrease) {
+          distanceCanMoveLeft += 0.1;
+        } else {
+          canMoveLeft = false
+          break;
+        }
+      }
+      this.x -= distanceCanMoveLeft
+    }
     if (this.jumps && !this.currentlyJumping) {
       this.upForce = 18;
       this.jumping = true;
@@ -168,6 +212,29 @@ function Man(board, x, y, height, width, colour) {
     }
     if (this.onGround() && this.currentlyJumping) {
       this.currentlyJumping = false;
+    }
+    if (this.onGround()) {
+      this.downForce = 0;
+      var distanceCanMoveDown = 0
+      var canMoveDown = true;
+      var readyToIncrease = true;
+      while (canMoveDown) {
+        readyToIncrease = true
+        for (var i = 0; i <= this.width; i++) {
+          if (this.board.isBlocked(this.x + i, this.y + this.height + distanceCanMoveDown + 0.1)) {
+            canMoveDown = false
+            readyToIncrease = false
+            break;
+          }
+        }
+        if (readyToIncrease) {
+          distanceCanMoveDown += 0.1;
+        } else {
+          canMoveDown = false
+          break;
+        }
+      }
+      this.y += distanceCanMoveDown
     }
     if (this.currentlyJumping) {
       this.jumps = false;
@@ -187,7 +254,7 @@ function Man(board, x, y, height, width, colour) {
       var oldUpForce = this.upForce
       this.upForce = Math.floor(oldUpForce * .89);
       var canMoveUpForceUp = true
-      for (var i = 0; i < this.height; i++) {
+      for (var i = 0; i <= this.height; i++) {
         if (this.blockedUp(this.y - this.upForce + i)) {
           canMoveUpForceUp = false
           break;
@@ -196,7 +263,26 @@ function Man(board, x, y, height, width, colour) {
       if (canMoveUpForceUp && this.upForce > 0) {
         this.y -= this.upForce
       } else if (!canMoveUpForceUp && this.canMoveUp() && this.upForce > 0) {
-        this.y -= 1;
+        var distanceCanMoveUp = 0
+        var canMoveUp = true;
+        var readyToIncrease = true;
+        while (canMoveUp) {
+          readyToIncrease = true
+          for (var i = 0; i <= this.width; i++) {
+            if (this.board.isBlocked(this.x + i, this.y - distanceCanMoveUp - 0.1)) {
+              canMoveUp = false
+              readyToIncrease = false
+              break;
+            }
+          }
+          if (readyToIncrease) {
+            distanceCanMoveUp += 0.1;
+          } else {
+            canMoveUp = false
+            break;
+          }
+        }
+        this.y -= distanceCanMoveUp
       } else {
         this.counter += 2;
       }
@@ -391,7 +477,7 @@ var start = function() {
   var left = new Line(board, 0, 0, 1, board.height, "black")
   var right = new Line(board, board.width - 1, 0, 1, board.height, "black")
 
-  var man = new Man(board, board.width / 2 - 10, board.height - 2 - 10, 16, 9, "blue")
+  var man = new Man(board, board.width / 2 - 10, board.height - 2 - 40, 16, 9, "blue")
 
   board.add(man);
   board.addMan(man);
