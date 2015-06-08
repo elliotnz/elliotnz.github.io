@@ -33,7 +33,7 @@ function Thing(board, x, y) {
   this.onGround = function() {
     var onGround = false
     for (var i = 0; i <= this.width; i++) {
-      if (this.board.isBlocked(this.x + i, this.y + this.height + 1)) {
+      if (this.board.isBlocked(this.x + i, this.y + this.height + 0.1)) {
         onGround = true;
       }
     }
@@ -51,18 +51,10 @@ function Thing(board, x, y) {
   }
 
   this.againstLeftLine = function() {
-    var avaliableSteps = 0;
     var varLeftLine = false
-    for (var i = 1; i <= this.step; i++) {
-      for (var j = 0; j <= this.height; j++) {
+    for (var i = 0; i <= this.step; i++) {
+      for (var j = 0.1; j <= this.height; j++) {
         if (this.board.isBlocked(this.x - i, this.y + j)) {
-          if (!this.board.isBlocked(this.x - avaliableSteps, this.y + j)) {
-            avaliableSteps += 1
-          }
-        }
-        if (this.board.isBlocked(this.x - i, this.y + j)) {
-          var used = avaliableSteps
-          avaliableSteps = 0
           varLeftLine = true;
           break;
         }
@@ -72,12 +64,10 @@ function Thing(board, x, y) {
   }
 
   this.againstRightLine = function() {
-    var avaliableSteps = 0;
     var varRightLine = false
-    for (var i = 1; i <= this.step; i++) {
-      for (var j = 0; j <= this.height; j++) {
+    for (var i = 0; i <= this.step; i++) {
+      for (var j = 0.1; j <= this.height; j++) {
         if (this.board.isBlocked(this.x + this.width + i, this.y + j)) {
-          var used = avaliableSteps
           varRightLine = true;
           break;
         }
@@ -255,9 +245,20 @@ function Man(board, x, y, height, width, colour, button1, button2, button3, butt
       var oldUpForce = this.upForce
       this.upForce = Math.floor(oldUpForce * .89);
       var canMoveUpForceUp = true
-      for (var i = 0; i < this.height; i++) {
-        if (this.blockedUp(this.y - this.upForce + i)) {
-          canMoveUpForceUp = false
+      // for (var i = 0; i < this.height; i++) {
+      //   if (this.blockedUp(this.y - this.upForce + i)) {
+      //     canMoveUpForceUp = false
+      //     break;
+      //   }
+      // }
+      for (var i = 1; i <= this.width; i++) {
+        for (var j = 0; j <= this.height; j++) {
+          if (this.board.isBlocked(this.x + i, this.y - this.upForce + i)) {
+            canMoveUpForceUp = false
+            break;
+          }
+        }
+        if (!canMoveUpForceUp) {
           break;
         }
       }
@@ -297,25 +298,53 @@ function Man(board, x, y, height, width, colour, button1, button2, button3, butt
     if (this.falling) {
       this.counter += 0.1
       var canMoveDownForceDown = true
-      for (var i = 0; i <= this.height + 1; i++) {
+      for (var i = 0; i <= this.height; i++) {
         if (this.towardsGround(this.y + (this.downForce * this.counter) + i)) {
           canMoveDownForceDown = false;
           break;
         }
       }
-
       if (canMoveDownForceDown) {
         this.y += this.downForce * this.counter;
-      } else if (!canMoveDownForceDown && !this.onGround()) {
-        this.y += 1;
+      } else {
+        var distanceCanMoveDown = 0
+        var canMoveDown = true;
+        var readyToIncrease = true;
+        while (canMoveDown) {
+          readyToIncrease = true
+          for (var i = 0; i <= this.width; i++) {
+            if (this.board.isBlocked(this.x + i, this.y + this.height + distanceCanMoveDown + 0.1)) {
+              //canMoveDown = false
+              readyToIncrease = false
+              break;
+              //break;
+            }
+          }
+          if (readyToIncrease) {
+            distanceCanMoveDown += 0.1;
+          } else {
+            canMoveDown = false
+            break;
+          }
+        }
+        if (distanceCanMoveDown < this.downForce * this.counter) {
+          this.y += distanceCanMoveDown
+          this.falling = false;
+          this.currentlyJumping = false;
+          this.counter = 0;
+          this.downForce = 0;
+        } else {
+          this.y += this.downForce * this.counter;
+        }
       }
-      if (this.onGround()) {
-        this.falling = false;
-        this.currentlyJumping = false;
-        this.counter = 0;
-        this.downForce = 0;
-      }
+      // if (this.onGround()) {
+      //   this.falling = false;
+      //   this.currentlyJumping = false;
+      //   this.counter = 0;
+      //   this.downForce = 0;
+      // }
     }
+
     if ((this.xChange < 0 && !this.againstLeftLine()) ||
     (this.xChange > 0 && !this.againstRightLine())) {
       this.x += this.xChange * this.step;
@@ -333,6 +362,7 @@ function Man(board, x, y, height, width, colour, button1, button2, button3, butt
     } else {
       this.getBulletTimer = null
     }
+
     if (this.againstLeftLine() && this.board.keyMap[this.button1]) {
       var distanceCanMoveLeft = 0
       var canMoveLeft = true;
@@ -340,7 +370,7 @@ function Man(board, x, y, height, width, colour, button1, button2, button3, butt
       while (canMoveLeft) {
         readyToIncrease = true
         for (var i = 0; i <= this.height; i++) {
-          if (this.board.isBlocked(this.x - distanceCanMoveLeft - 0.1, this.y + i)) {
+          if (this.board.isBlocked(this.x - distanceCanMoveLeft - 0.2, this.y + i)) {
             //canMoveLeft = false
             readyToIncrease = false
             break;
@@ -354,7 +384,11 @@ function Man(board, x, y, height, width, colour, button1, button2, button3, butt
           break;
         }
       }
-      this.x -= distanceCanMoveLeft
+      if (distanceCanMoveLeft < 4) {
+        this.x -= distanceCanMoveLeft
+      } else {
+        this.x -= 1
+      }
     }
     if (this.againstRightLine() && this.board.keyMap[this.button2]) {
       var distanceCanMoveRight = 0
@@ -363,7 +397,7 @@ function Man(board, x, y, height, width, colour, button1, button2, button3, butt
       while (canMoveRight) {
         readyToIncrease = true
         for (var i = 0; i <= this.height; i++) {
-          if (this.board.isBlocked(this.x + this.width + distanceCanMoveRight + 0.1, this.y + i)) {
+          if (this.board.isBlocked(this.x + this.width + distanceCanMoveRight + 0.2, this.y + i)) {
             readyToIncrease = false
             break;
           }
@@ -375,35 +409,39 @@ function Man(board, x, y, height, width, colour, button1, button2, button3, butt
           break;
         }
       }
-      this.x += distanceCanMoveRight
-    }
-    if (this.onGround()) {
-      this.falling = false;
-      this.currentlyJumping = false;
-      this.counter = 0;
-      this.downForce = 0;
-      var distanceCanMoveDown = 0
-      var canMoveDown = true;
-      var readyToIncrease = true;
-      while (canMoveDown) {
-        readyToIncrease = true
-        for (var i = 0; i <= this.width; i++) {
-          if (this.board.isBlocked(this.x + i, this.y + this.height + distanceCanMoveDown + 0.1)) {
-            //canMoveDown = false
-            readyToIncrease = false
-            break;
-            //break;
-          }
-        }
-        if (readyToIncrease) {
-          distanceCanMoveDown += 0.1;
-        } else {
-          canMoveDown = false
-          break;
-        }
+      if (distanceCanMoveRight < 4) {
+        this.x += distanceCanMoveRight
+      } else {
+        this.x += 1
       }
-      this.y += distanceCanMoveDown
     }
+    // if (this.onGround()) {
+    //   this.falling = false;
+    //   this.currentlyJumping = false;
+    //   this.counter = 0;
+    //   this.downForce = 0;
+    //   var distanceCanMoveDown = 0
+    //   var canMoveDown = true;
+    //   var readyToIncrease = true;
+    //   while (canMoveDown) {
+    //     readyToIncrease = true
+    //     for (var i = 0; i <= this.width; i++) {
+    //       if (this.board.isBlocked(this.x + i, this.y + this.height + distanceCanMoveDown + 0.1)) {
+    //         //canMoveDown = false
+    //         readyToIncrease = false
+    //         break;
+    //         //break;
+    //       }
+    //     }
+    //     if (readyToIncrease) {
+    //       distanceCanMoveDown += 0.1;
+    //     } else {
+    //       canMoveDown = false
+    //       break;
+    //     }
+    //   }
+    //   this.y += distanceCanMoveDown
+    // }
 
     //bullet and tagging stuff
     if (this.board.men[1].colour === "red") {

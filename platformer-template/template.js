@@ -53,7 +53,7 @@ function Thing(board, x, y) {
   this.againstLeftLine = function() {
     var avaliableSteps = 0;
     var varLeftLine = false
-    for (var i = 1; i <= 4; i++) {
+    for (var i = 1; i <= this.step; i++) {
       for (var j = 0; j <= this.height; j++) {
         if (this.board.isBlocked(this.x - i, this.y + j)) {
           if (!this.board.isBlocked(this.x - avaliableSteps, this.y + j)) {
@@ -75,7 +75,7 @@ function Thing(board, x, y) {
   this.againstRightLine = function() {
     var avaliableSteps = 0;
     var varRightLine = false
-    for (var i = 1; i <= 4; i++) {
+    for (var i = 1; i <= this.step; i++) {
       for (var j = 0; j <= this.height; j++) {
         if (this.board.isBlocked(this.x + this.width + i, this.y + j)) {
           if (!this.board.isBlocked(this.x + this.width + avaliableSteps, this.y + j)) {
