@@ -3,9 +3,19 @@
   <head>
     <script src="tag.js"></script>
   </head>
-  <body onload='start()'>
-    <canvas id="myCanvas" style="background-color: silver; margin-left: 5px;">Your browser does not support the HTML5 canvas tag.</canvas>
-    <button onclick="pause()" style="border-radius: 1%; border: 2px solid black;
+  <body onload='setUp()'>
+    <div id="playerNames" style="font-family: Verdana; font-size: 20px; position: absolute;
+    left: 500px; top: 200px; visibility: hidden; border-radius: 0%">
+      <form id="frm1" action="form_action.asp">
+        Player 1 Name: <input type="text" name="fname" value=""><br>
+        Player 2 Name: <input type="text" name="lname" value=""><br><br>
+      </form>
+      <input type="submit" value="Submit" onclick="submitPlayerNames()" style="border-radius: 1%; border: 2px solid black;
+      background-color: white; width: 60px; height: 25px;">
+    </div>
+
+    <canvas id="myCanvas" style="background-color: silver; margin-left: 5px; visibility: visible;">Your browser does not support the HTML5 canvas tag.</canvas>
+    <button id="pause" onclick="pause()" style="border-radius: 1%; border: 2px solid black;
     background-color: green; position: absolute; left: 1150px; top: 20px;
     width: 100px; height: 35px; font-family: Verdana; font-size: 20px">
     Pause</button>

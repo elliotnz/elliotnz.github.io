@@ -105,11 +105,13 @@ function Man(board, x, y, height, width, colour, button1, button2, button3, butt
     //body
     this.board.context.fillStyle = this.colour;
     this.board.context.fillRect(this.x, this.y, this.width, this.height)
+    var player1x = Math.pow(this.board.playerNamesArray[0].length, 1) * 5;
+    var player2x = Math.pow(this.board.playerNamesArray[1].length, 1) * 5;
     this.board.context.font = "20px Verdana"
     if (this.board.men.indexOf(this) === 0) {
-      this.board.context.fillText("Player One: " + this.bullets, this.x - 55, this.y - 3)
+      this.board.context.fillText(this.board.playerNamesArray[0] + ": "+ this.bullets, this.x - player1x, this.y - 3)
     } else {
-      this.board.context.fillText("Player Two: " + this.bullets, this.x - 60, this.y - 3)
+      this.board.context.fillText(this.board.playerNamesArray[1] + ": " + this.bullets, this.x - player2x, this.y - 3)
     }
   }
 
@@ -540,6 +542,7 @@ function Board(width, height, pixelWidth, context) {
   this.context.canvas.style.width = '' + (width * pixelWidth)  + 'px';
   this.context.canvas.style.height = '' + (height * pixelWidth) + 'px';
   this.keyMap = [];
+  this.playerNamesArray = [];
   this.men = [];
   this.lines = [];
   this.elevators = [];
@@ -658,9 +661,7 @@ var pause = function() {
   }
 }
 
-var start = function() {
-  board = getBoard()//new Board(1000, 500, 1, context);
-
+var add = function() {
   var line = new Line(board, board.width / 2 - 240, board.height - 20, 25, 5)
   var line2 = new Line(board, board.width / 2 - 180, board.height - 50, 25, 5)
   var line3 = new Line(board, board.width / 2 - 110, board.height - 80, 25, 5)
@@ -777,6 +778,38 @@ var start = function() {
 
   board.addScore(score1)
   board.addScore(score2)
+}
+
+var submitPlayerNames = function() {
+  var x = document.forms["frm1"];
+  var canStart = true;
+  for (var i = 0; i < x.length; i++) {
+    if (x.elements[i].value.length > 0) {
+      board.playerNamesArray[i] = x.elements[i].value;
+    } else {
+      canStart = false;
+    }
+  }
+  if (canStart) {
+    document.getElementById("playerNames").style.visibility = "hidden";
+    document.getElementById("myCanvas").style.visibility = "visible";
+    document.getElementById("controls").style.visibility = "visible";
+    document.getElementById("pause").style.visibility = "visible";
+    start()
+  }
+};
+
+var setUp = function() {
+  board = getBoard()//new Board(1000, 500, 1, context);
+
+  document.getElementById("playerNames").style.visibility = "visible";
+  document.getElementById("myCanvas").style.visibility = "hidden";
+  document.getElementById("controls").style.visibility = "hidden";
+  document.getElementById("pause").style.visibility = "hidden";
+};
+
+var start = function() {
+  add()
 
   document.onkeydown = board.keyUpDown;
   document.onkeyup = board.keyUpDown;
@@ -798,4 +831,4 @@ var start = function() {
     if (!board.paused)
       board.turn()
   }, 1000 / 60);
-}
+};
