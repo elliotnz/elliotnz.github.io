@@ -1,0 +1,80 @@
+.koala:hover {
+  cursor: pointer;
+}
+
+#koala:hover {
+  cursor: pointer;
+}
+
+body {
+  overflow-y: hidden; /* hide vertical */
+  overflow-x: hidden; /* hide horizontal */
+  margin: 0px;
+}
+
+#main  {
+  z-index: 100;
+  background-color: #F0F0F0;
+  width: 100%;
+  height: 100%;
+
+}
+#right {
+  position: absolute;
+  z-index: 10;
+  background-color: #804000;
+  width: 126px;
+  height: 100%;
+  float: right;
+  right: 0;
+}
+
+.tower {
+  background-color: yellow;
+}
+
+#toolbar {
+
+
+}
+
+#bottom {
+  z-index: 10;
+  background-color: #804000;
+  width: 100%;
+  height: 100px;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+}
+
+.tool {
+  float: left;
+  border: 2px solid black;
+  border-right-width: 0px;
+  border-top-width: 0px;
+  z-index: 10px;
+  background-repeat: no-repeat;
+  width: 60px;
+  height: 60px;
+  position: relative;
+  right: 0px;
+  bottom: 0px;
+}
+
+.Koala {
+  border-radius: 0%;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 10;
+  background-image: url(/Users/elliotandhamish/Documents/Programming/tower_defence/koala.png);
+  background-repeat: no-repeat;
+  width: 60px;
+  height: 60px;
+  position: absolute;
+  right: 50px;
+  top: 250px;
+}
+
+#Koala {
+  background-image: url(/Users/elliotandhamish/Documents/Programming/tower_defence/koala.png);
+}
