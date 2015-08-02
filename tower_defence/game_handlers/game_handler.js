@@ -34,7 +34,7 @@ function Handler() {
           }
         }
       }
-      if (e.x < window.innerWidth - 126 - thing.radius / 2 + 1&& e.y < window.innerHeight - 100 - thing.radius / 2 + 1) {
+      if (e.x < window.innerWidth - 126 - thing.radius / 2 + 1 && e.y < window.innerHeight - 100 - thing.radius / 2 + 1) {
 
       } else {
         canPlace = false

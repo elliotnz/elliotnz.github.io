@@ -35,7 +35,6 @@ body {
 
 #toolbar {
 
-
 }
 
 #bottom {
@@ -66,7 +65,7 @@ body {
   border-radius: 0%;
   background-color: rgba(0,0,0,0.5);
   z-index: 10;
-  background-image: url(/Users/elliotandhamish/Documents/Programming/tower_defence/koala.png);
+  background-image: url(/Users/elliotandhamish/Documents/Programming/elliotnz.github.io/tower_defence/koala.png);
   background-repeat: no-repeat;
   width: 60px;
   height: 60px;
@@ -76,5 +75,5 @@ body {
 }
 
 #Koala {
-  background-image: url(/Users/elliotandhamish/Documents/Programming/tower_defence/koala.png);
+  background-image: url(/Users/elliotandhamish/Documents/Programming/elliotnz.github.io/tower_defence/koala.png);
 }
