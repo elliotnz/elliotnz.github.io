@@ -30,7 +30,7 @@ body {
 }
 
 .tower {
-  background-color: yellow;
+
 }
 
 #toolbar {
@@ -62,7 +62,7 @@ body {
 }
 
 .Koala {
-  border-radius: 0%;
+  object-position: center;
   background-color: rgba(0,0,0,0.5);
   z-index: 10;
   background-image: url(koala.png);
@@ -70,8 +70,6 @@ body {
   width: 60px;
   height: 60px;
   position: absolute;
-  right: 50px;
-  top: 250px;
 }
 
 #Koala {

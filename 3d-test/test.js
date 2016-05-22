@@ -36,6 +36,10 @@ function Shape(segments, verticies) {
     return deg * (Math.PI / 180.0)
   }
 
+  this.radToDeg = function(rad) {
+    return  rad / (Math.PI / 180.0)
+  }
+
   this.rotate = function(degreesToRotate, origin) {
     var r = this.degToRad(degreesToRotate);
     for (var i = 0; i < this.verticies.length; i++) {
@@ -69,21 +73,51 @@ function Square(board, x, y, w, h) {
 }
 Square.prototype = new Shape();
 
-function Line(board, x, y, endX, endY) {
+function Line(board, x, y, l, angle) {
   this.board = board;
-  this.x = x;
-  this.y = y;
-  this.endX = endX;
-  this.endY = endY;
-  this.verticies = [new Point(this.x, this.y), new Point(this.endX, this.endY)]
-  this.segments =
-  [
-  [this.verticies[0], this.verticies[1]]
-  ];
-  this.centre = new Point(this.x + Math.abs(this.endX - this.x) / 2, this.y + Math.abs(this.endY - this.y) / 2);
+  this.startPoint = new Point(x,y);
+  this.endPoint = new Point(x,y);
+  this.centre = new Point(x,y)
+  this.l = l;
+  this.angle = angle;
+
+  this.calculateEndPoint = function() {
+    this.endPoint.x = this.l * Math.cos(this.degToRad(this.angle)) + this.startPoint.x;
+    this.endPoint.y = this.l * Math.sin(this.degToRad(this.angle)) + this.startPoint.y;
+
+  }
+
+  this.calculateCentre = function() {
+    this.centre.x = this.startPoint.x + ((this.endPoint.x - this.startPoint.x) / 2.0)
+    this.centre.y = this.startPoint.y + ((this.endPoint.y - this.startPoint.y) / 2.0)
+  }
+
+  this.changeLength = function(changeInLength) {
+    // calc new startPoint and endPoint....
+    this.l += changeInLength
+    var adj = this.endPoint.x - this.startPoint.x
+    var rads = Math.acos(adj / this.l);
+    this.startPoint.x -= (changeInLength) * Math.cos(rads);
+    this.startPoint.y -= (changeInLength) * Math.sin(rads);
+    this.endPoint.x += (changeInLength) * Math.cos(rads);
+    this.endPoint.y += (changeInLength) * Math.sin(rads);
+  }
+
+  this.calculateEndPoint();
+  this.calculateCentre();
+
+  this.verticies = [this.startPoint, this.endPoint]
+  this.segments = [[this.verticies[0], this.verticies[1]]];
 
   this.turn = function() {
-    this.rotate(-1, this.centre);
+    //this.rotate(1, this.centre);
+    //this.l += 1;
+    this.changeLength(0.5)
+    //this.calculateEndPoint();
+    //this.calculateCentre();
+
+  //  this.rotate(1, this.centre);
+
   }
 }
 Line.prototype = new Shape();
@@ -136,13 +170,12 @@ var start = function() {
   var board = getBoard();
   var mySquare = new Square(board, 300, 200, 100, 100);
 
-  var myLine = new Line(board, 300, 250, 400, 250);
+  var myLine = new Line(board, 390, 250, 100, 0);
 
   board.shapes.push(mySquare);
   board.shapes.push(myLine);
 
-  mySquare.rotate(-15, mySquare.centre);
-  myLine.rotate(-15, myLine.centre);
+  //myLine.rotate(-15, myLine.centre);
 
   board.draw("black")
 

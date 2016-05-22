@@ -1,0 +1,73 @@
+#myCanvas {
+  background-color: silver;
+  margin-left: 5px;
+  visibility: visible;
+}
+
+#playerNames {
+  font-family: Verdana;
+  font-size: 20px;
+  position: absolute;
+  left: 500px;
+  top: 200px;
+  visibility: hidden;
+  border-radius: 0%;
+}
+
+#pause {
+  border-radius: 1%;
+  border: 2px solid black;
+  background-color: green;
+  position: absolute;
+  left: 1150px;
+  top: 20px;
+  width: 100px;
+  height: 35px;
+  font-family: Verdana;
+  font-size: 20px;
+}
+
+#pause:focus {
+  outline: 0;
+}
+
+#pauseSign {
+  position: absolute;
+  left: 500px;
+  top: 200px;
+  visibility: hidden;
+  font-family: Verdana;
+  font-size: 70px;
+}
+
+b {
+  font-size: 20px;
+}
+
+#controls {
+  font-family: Verdana;
+  line-height: 45%;
+}
+
+input[type=submit] {
+  padding: 10px;
+  font-family: sans-serif;
+  text-align: center;
+  font-size: 17px;
+  border-radius: 1%;
+  border: 2px solid black;
+  background-color: white;
+  width: 100px;
+  height: 50px;
+  border-color: #A7A7A7;
+  transition: border-color .3s;
+}
+
+input[type=submit]:focus {
+  outline: 0;
+}
+
+input[type=submit]:active {
+  outline: 0;
+  border-color: black;
+}
