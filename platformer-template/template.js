@@ -82,12 +82,12 @@ function Man(board, x, y, height, width, colour) {
   this.colour = colour
   this.counter = 0;
   this.jumping = false;
-  // this.jumps = false;
-  // this.currentlyJumping = false;
-  // this.falling = false;
-  // this.readyToJump = false;
+  this.jumps = false;
+  this.currentlyJumping = false;
+  this.falling = false;
+  this.readyToJump = false;
   this.upForce = 0;
-  // this.downForce = 0;
+  this.downForce = 0;
   this.xChange = 0;
   this.lastXChange = 1;
   this.step = 4;
@@ -155,202 +155,122 @@ function Man(board, x, y, height, width, colour) {
       }
       this.x -= distanceCanMoveLeft
     }
-    if (this.jumping && this.onGround() && this.upForce === 0) {
-      this.upForce = 50
-    } else if (!this.onGround()) {
+    if (this.jumps && !this.currentlyJumping) {
+      this.upForce = 18;
       this.jumping = true;
-      this.upForce = -1;
-    } else {
+      this.currentlyJumping = true;
+    }
+    if (this.onGround() && this.currentlyJumping) {
+      this.currentlyJumping = false;
+    }
+    if (this.currentlyJumping) {
+      this.jumps = false;
+    }
+    if (this.falling && this.upForce > 0) {
+      this.upForce = 0;
       this.jumping = false;
     }
-    //see if jumping
+    if (!this.onGround() && !this.jumping) {
+      this.falling = true;
+      this.downForce = 1;
+    } else {
+      this.falling = false;
+      this.downForce = 0;
+    }
     if (this.jumping) {
-      var upOrDown
-      var upOrDown2
-      var upOrDown3
-      //either move up
-      if (this.upForce > 0) {
-        this.upForce = Math.floor(this.upForce * 0.98);
-        upOrDown = this.height + this.upForce
-        upOrDown2 = this.height
-        upOrDown3 = 1
-      }
-      //or down
-      if (this.upForce < 0) {
-        this.upForce = Math.floor(this.upForce / 0.98);
-        upOrDown = this.height - this.upForce
-        upOrDown2 = 0
-        upOrDown3 = -1
-      }
-      var canMove = true
-      for (var i = 0; i <= this.width; i++) {
-        for (var j = 0; j <= upOrDown; j++) {
-          if (this.board.isBlocked(this.x + i, this.y + upOrDown2 - (j * upOrDown3))) {
-          //if (this.board.isBlocked(this.x + i, this.y + j))
-            canMove = false
+      var oldUpForce = this.upForce
+      this.upForce = Math.floor(oldUpForce * .89);
+      var canMoveUpForceUp = true
+      for (var i = 1; i <= this.width; i++) {
+        for (var j = 0; j <= this.height + this.upForce; j++) {
+          if (this.board.isBlocked(this.x + i, this.y + this.height - j)) {
+            canMoveUpForceUp = false
             break;
           }
         }
-        if (!canMove) {
+        if (!canMoveUpForceUp) {
           break;
         }
       }
-      //move
-      if (canMove) {
+      if (canMoveUpForceUp && this.canMoveUp() && this.upForce > 0) {
         this.y -= this.upForce
-      } else {
-        //this.upForce = 0;
-        //this.jumping = false;
-        var canMoveCloser = true
-        for (var i = 0; i <= this.width; i++) {
-          if (this.board.isBlocked(this.x + i, this.y + this.height - upOrDown2 + (0.1 * upOrDown3))) {
-            canMoveCloser = false
+      } else if (!canMoveUpForceUp && this.canMoveUp() && this.upForce > 0) {
+        var distanceCanMoveUp = 0
+        var canMoveUp = true;
+        var readyToIncrease = true;
+        while (canMoveUp) {
+          readyToIncrease = true
+          for (var i = 0; i <= this.width; i++) {
+            if (this.board.isBlocked(this.x + i, this.y - distanceCanMoveUp - 0.1)) {
+              canMoveUp = false
+              readyToIncrease = false
+              break;
+            }
+          }
+          if (readyToIncrease) {
+            distanceCanMoveUp += 0.1;
+          } else {
+            canMoveUp = false
             break;
           }
         }
-        if (canMoveCloser) {
-          this.y -= 0.1 * upOrDown3
-          canMoveCloser = false
-        }
-        // var distanceCanMove = 0
-        // var canMoveCloser = true;
-        // var readyToIncrease = true;
-      //   while (canMoveCloser) {
-      //     readyToIncrease = true
-      //     for (var i = 0; i <= this.width; i++) {
-      //       if (this.board.isBlocked(this.x + i, this.y + this.height + distanceCanMove + 0.1)) {
-      //         canMoveCloser = false
-      //         readyToIncrease = false
-      //         break;
-      //       }
-      //     }
-      //     if (readyToIncrease) {
-      //       distanceCanMove += 0.1;
-      //     } else {
-      //       canMoveCloser = false
-      //       break;
-      //     }
-      //   }
-      //   this.y += distanceCanMove;
+        this.y -= distanceCanMoveUp
+      } else {
+        this.counter += 2;
+      }
+      if (this.counter > 10) {
+        this.counter = 0;
+        this.downForce = 1
+        this.jumping = false
+        this.falling = true
       }
     }
-
-    // if (this.jumps && !this.currentlyJumping) {
-    //   this.upForce = 15;
-    //   this.jumping = true;
-    //   this.currentlyJumping = true;
-    // }
-    // if (this.onGround() && this.currentlyJumping) {
-    //   this.currentlyJumping = false;
-    // }
-    // if (this.currentlyJumping) {
-    //   this.jumps = false;
-    // }
-    // if (this.falling && this.upForce > 0) {
-    //   this.upForce = 0;
-    //   this.jumping = false;
-    // }
-    // if (!this.onGround() && !this.jumping) {
-    //   this.falling = true;
-    //   this.downForce = 1;
-    // } else {
-    //   this.falling = false;
-    //   this.downForce = 0;
-    // }
-    // if (this.jumping) {
-    //   var oldUpForce = this.upForce
-    //   this.upForce = Math.floor(oldUpForce * .98);
-    //   var canMoveUpForceUp = true
-    //   for (var i = 0; i <= this.width; i++) {
-    //     for (var j = 0; j <= this.height + this.upForce; j++) {
-    //       if (this.board.isBlocked(this.x + i, this.y + this.height - j)) {
-    //         canMoveUpForceUp = false
-    //         break;
-    //       }
-    //     }
-    //     if (!canMoveUpForceUp) {
-    //       break;
-    //     }
-    //   }
-    //   if (canMoveUpForceUp && this.canMoveUp() && this.upForce > 0) {
-    //     this.y -= this.upForce
-    //   } else if (!canMoveUpForceUp && this.canMoveUp() && this.upForce > 0) {
-    //     var distanceCanMoveUp = 0
-    //     var canMoveUp = true;
-    //     var readyToIncrease = true;
-    //     while (canMoveUp) {
-    //       readyToIncrease = true
-    //       for (var i = 0; i <= this.width; i++) {
-    //         if (this.board.isBlocked(this.x + i, this.y - distanceCanMoveUp - 0.1)) {
-    //           canMoveUp = false
-    //           readyToIncrease = false
-    //           break;
-    //         }
-    //       }
-    //       if (readyToIncrease) {
-    //         distanceCanMoveUp += 0.1;
-    //       } else {
-    //         canMoveUp = false
-    //         break;
-    //       }
-    //     }
-    //     this.y -= distanceCanMoveUp
-    //   } else {
-    //     this.counter += 2;
-    //   }
-    //   if (this.counter > 10) {
-    //     this.counter = 0;
-    //     this.downForce = 1
-    //     this.jumping = false
-    //     this.falling = true
-    //   }
-    // }
-    // if (this.falling) {
-    //   this.counter += 0.1
-    //   var canMoveDownForceDown = true
-    //   for (var i = 1; i <= this.width; i++) {
-    //     for (var j = 0; j <= this.height; j++) {
-    //       if (this.board.isBlocked(this.x + i, this.y + (this.downForce * this.counter) + j)) {
-    //         canMoveDownForceDown = false;
-    //         break;
-    //       }
-    //     }
-    //     if (!canMoveDownForceDown) {
-    //       break;
-    //     }
-    //   }
-    //   if (canMoveDownForceDown) {
-    //     this.y += this.downForce * this.counter;
-    //   } else {
-    //     var distanceCanMoveDown = 0
-    //     var canMoveDown = true;
-    //     var readyToIncrease = true;
-    //     while (canMoveDown) {
-    //       readyToIncrease = true
-    //       for (var i = 0; i <= this.width; i++) {
-    //         if (this.board.isBlocked(this.x + i, this.y + this.height + distanceCanMoveDown + 0.1)) {
-    //           readyToIncrease = false
-    //           break;
-    //         }
-    //       }
-    //       if (readyToIncrease) {
-    //         distanceCanMoveDown += 0.1;
-    //       } else {
-    //         canMoveDown = false
-    //         break;
-    //       }
-    //     }
-    //     if (distanceCanMoveDown < this.downForce * this.counter) {
-    //       this.y += distanceCanMoveDown
-    //       this.falling = false;
-    //       this.currentlyJumping = false;
-    //       this.counter = 0;
-    //       this.downForce = 0;
-    //     } else {
-    //       this.y += this.downForce * this.counter;
-    //     }
-    //   }
-    // }
+    if (this.falling) {
+      this.counter += 0.1
+      var canMoveDownForceDown = true
+      for (var i = 1; i <= this.width; i++) {
+        for (var j = 0; j <= this.height; j++) {
+          if (this.board.isBlocked(this.x + i, this.y + (this.downForce * this.counter) + j)) {
+            canMoveDownForceDown = false;
+            break;
+          }
+        }
+        if (!canMoveDownForceDown) {
+          break;
+        }
+      }
+      if (canMoveDownForceDown) {
+        this.y += this.downForce * this.counter;
+      } else {
+        var distanceCanMoveDown = 0
+        var canMoveDown = true;
+        var readyToIncrease = true;
+        while (canMoveDown) {
+          readyToIncrease = true
+          for (var i = 0; i <= this.width; i++) {
+            if (this.board.isBlocked(this.x + i, this.y + this.height + distanceCanMoveDown + 0.1)) {
+              readyToIncrease = false
+              break;
+            }
+          }
+          if (readyToIncrease) {
+            distanceCanMoveDown += 0.1;
+          } else {
+            canMoveDown = false
+            break;
+          }
+        }
+        if (distanceCanMoveDown < this.downForce * this.counter) {
+          this.y += distanceCanMoveDown
+          this.falling = false;
+          this.currentlyJumping = false;
+          this.counter = 0;
+          this.downForce = 0;
+        } else {
+          this.y += this.downForce * this.counter;
+        }
+      }
+    }
     if ((this.xChange < 0 && !this.againstLeftLine()) ||
     (this.xChange > 0 && !this.againstRightLine())) {
       this.x += this.xChange * this.step;
@@ -359,7 +279,7 @@ function Man(board, x, y, height, width, colour) {
   }
 
   this.jump = function() {
-    this.jumping = true;
+    this.jumps = true;
   }
   this.moveleft = function() {
     this.xChange = -1;
