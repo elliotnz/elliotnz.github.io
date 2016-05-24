@@ -1,3 +1,19 @@
 body {
   margin: 0px;
 }
+
+.ball {
+  -webkit-animation: animate 5s;
+  -webkit-animation-iteration-count: infinite;
+}
+
+@-webkit-keyframes animate {
+    0%   {background-color:red;}
+    14%  {background-color:orange;}
+    28% {background-color:yellow;}
+    42% {background-color:green;}
+    58% {background-color:blue;}
+    72% {background-color:purple;}
+    86% {background-color:indigo;}
+    100% {background-color:red;}
+}
