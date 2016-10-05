@@ -1180,7 +1180,7 @@ var start = function() {
   var text = new Text(board, "Watch out for these platforms!", 200, 350, "20px")
   var guideLine = new Line(board, 330, 360, 2, 80, false, "black")
   var welcome = new Text(board, "Welcome to the Game!", 30, 100, "80px")
-  var colourConvertorText = new Text(board, "These are colour convertors", -400, 370, "20px")
+  var colourConverterText = new Text(board, "These are colour converters", -400, 370, "20px")
   var guideLine2 = new Line(board, -115, 365, 115, 2, false, "black")
   var spikeText = new Text(board, "SPIKES!", 798, 470, "20px")
 
@@ -1210,13 +1210,13 @@ var start = function() {
 
   var wall = new Line(board, 3400, 99, 25, 400, true, "black")
 
-  var colourConvertor1 = new ColourConvertor(board, board.width / 2 + 270, board.height - 31, 25, 30, "blue", "red")
-  var colourConvertor2 = new ColourConvertor(board, 5, board.height - 150, 25, 30, "green", "blue")
+  var colourConverter1 = new ColourConverter(board, board.width / 2 + 270, board.height - 31, 25, 30, "blue", "red")
+  var colourConverter2 = new ColourConverter(board, 5, board.height - 150, 25, 30, "green", "blue")
 
-  var lineConvertor = new Line(board, board.width / 2 + 270, board.height - 35, 12.5, 5, true, "blue")
-  var lineConvertor2 = new Line(board, board.width / 2 + 282.5, board.height - 35, 12.5, 5, true, "red")
-  var lineConvertor3 = new Line(board, 5, board.height - 155, 12.5, 5, true, "green")
-  var lineConvertor4 = new Line(board, 17.5, board.height - 155, 12.5, 5, true, "blue")
+  var lineConverter = new Line(board, board.width / 2 + 270, board.height - 35, 12.5, 5, true, "blue")
+  var lineConverter2 = new Line(board, board.width / 2 + 282.5, board.height - 35, 12.5, 5, true, "red")
+  var lineConverter3 = new Line(board, 5, board.height - 155, 12.5, 5, true, "green")
+  var lineConverter4 = new Line(board, 17.5, board.height - 155, 12.5, 5, true, "blue")
 
   var step = new Line(board, -120, board.height - 50, 25, 5, true, "black")
   var step2 = new Line(board, -60, board.height - 100, 25, 5, true, "black")
@@ -1304,20 +1304,20 @@ var start = function() {
   board.addText(text)
   board.addText(welcome)
   board.addLines(guideLine)
-  board.addText(colourConvertorText)
+  board.addText(colourConverterText)
   board.addLines(guideLine2)
   board.addText(spikeText)
 
   board.addSpike(spike1);
   board.addSpike(spike2);
 
-  board.addColourConvertor(colourConvertor1)
-  board.addColourConvertor(colourConvertor2)
+  board.addColourConverter(colourConverter1)
+  board.addColourConverter(colourConverter2)
 
-  board.addLines(lineConvertor);
-  board.addLines(lineConvertor2);
-  board.addLines(lineConvertor3);
-  board.addLines(lineConvertor4);
+  board.addLines(lineConverter);
+  board.addLines(lineConverter2);
+  board.addLines(lineConverter3);
+  board.addLines(lineConverter4);
 
   board.addLines(block);
   board.addLines(block2);
